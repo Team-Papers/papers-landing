@@ -3,7 +3,8 @@
 import { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Menu, X, BookOpen } from "lucide-react";
+import Image from "next/image";
+import { Menu, X } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { NAV_LINKS } from "@/lib/constants";
 import Button from "@/components/ui/Button";
@@ -17,7 +18,13 @@ export default function Navbar() {
     <header className="fixed top-0 left-0 right-0 z-50 bg-white/80 backdrop-blur-lg border-b border-border/50">
       <nav className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
         <Link href="/" className="flex items-center gap-2">
-          <BookOpen className="w-8 h-8 text-primary" />
+          <Image
+            src="/images/logo-light.png"
+            alt="Papers"
+            width={40}
+            height={40}
+            className="w-10 h-10 object-contain"
+          />
           <span className="text-xl font-bold text-text-primary">
             Papers<span className="text-primary">.</span>
           </span>

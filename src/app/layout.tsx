@@ -14,17 +14,23 @@ export const metadata: Metadata = {
   },
   description: SITE_CONFIG.description,
   metadataBase: new URL(SITE_CONFIG.url),
+  icons: {
+    icon: "/images/logo-light.png",
+    apple: "/images/logo-light.png",
+  },
   openGraph: {
     type: "website",
     locale: "fr_CM",
     siteName: SITE_CONFIG.name,
     title: `${SITE_CONFIG.name} — ${SITE_CONFIG.tagline}`,
     description: SITE_CONFIG.description,
+    images: [{ url: "/images/logo-og.png", width: 1080, height: 1080, alt: SITE_CONFIG.name }],
   },
   twitter: {
     card: "summary_large_image",
     title: `${SITE_CONFIG.name} — ${SITE_CONFIG.tagline}`,
     description: SITE_CONFIG.description,
+    images: ["/images/logo-og.png"],
   },
 };
 

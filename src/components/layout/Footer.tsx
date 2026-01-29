@@ -1,5 +1,6 @@
 import Link from "next/link";
-import { BookOpen, Facebook, Twitter, Instagram, Linkedin, Mail, Phone, MapPin } from "lucide-react";
+import Image from "next/image";
+import { Facebook, Twitter, Instagram, Linkedin, Mail, Phone, MapPin } from "lucide-react";
 import { SITE_CONFIG } from "@/lib/constants";
 
 const footerLinks = {
@@ -24,7 +25,13 @@ export default function Footer() {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-10">
           <div>
             <Link href="/" className="flex items-center gap-2 mb-4">
-              <BookOpen className="w-7 h-7 text-primary" />
+              <Image
+                src="/images/logo-dark.png"
+                alt="Papers"
+                width={36}
+                height={36}
+                className="w-9 h-9 object-contain"
+              />
               <span className="text-lg font-bold">
                 Papers<span className="text-primary">.</span>
               </span>
