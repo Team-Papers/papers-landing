@@ -48,10 +48,14 @@ export default function Navbar() {
         </div>
 
         <div className="hidden md:flex items-center gap-3">
-          <Button variant="ghost" size="sm">
-            Se connecter
-          </Button>
-          <Button size="sm">Commencer</Button>
+          <a href="https://author.papers237.duckdns.org/login">
+            <Button variant="ghost" size="sm">
+              Se connecter
+            </Button>
+          </a>
+          <a href="https://author.papers237.duckdns.org/register">
+            <Button size="sm">Commencer</Button>
+          </a>
         </div>
 
         <button
@@ -88,12 +92,16 @@ export default function Navbar() {
                 </Link>
               ))}
               <div className="pt-3 border-t border-border space-y-2">
-                <Button variant="outline" size="sm" className="w-full">
-                  Se connecter
-                </Button>
-                <Button size="sm" className="w-full">
-                  Commencer
-                </Button>
+                <a href="https://author.papers237.duckdns.org/login">
+                  <Button variant="outline" size="sm" className="w-full">
+                    Se connecter
+                  </Button>
+                </a>
+                <a href="https://author.papers237.duckdns.org/register">
+                  <Button size="sm" className="w-full">
+                    Commencer
+                  </Button>
+                </a>
               </div>
             </div>
           </motion.div>
