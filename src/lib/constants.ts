@@ -248,7 +248,7 @@ export const SITE_CONFIG = {
   name: "Papers",
   tagline: "Livres et Histoires",
   description: "Plateforme camerounaise de publication et lecture de livres numériques avec paiement mobile.",
-  url: "https://papers.cm",
+  url: "https://papers237.duckdns.org",
   company: "Seed Soft Engine",
   email: "contact@papers.cm",
   phone: "+237 6XX XXX XXX",

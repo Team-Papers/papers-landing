@@ -60,12 +60,12 @@ export default function HeroSection() {
                 Explorer le catalogue
               </Button>
             </Link>
-            <Link href="/auteurs">
+            <a href="https://author.papers237.duckdns.org/register">
               <Button variant="outline" size="lg">
                 Devenir auteur
                 <ArrowRight className="w-5 h-5" />
               </Button>
-            </Link>
+            </a>
           </motion.div>
         </div>
       </div>

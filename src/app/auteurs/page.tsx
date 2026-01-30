@@ -41,10 +41,12 @@ export default function AuteursPage() {
               Rejoignez une communauté d&apos;auteurs camerounais et africains. Papers vous
               offre les meilleurs outils et la meilleure rémunération du marché.
             </p>
-            <Button size="lg">
-              <PenTool className="w-5 h-5" />
-              Devenir auteur
-            </Button>
+            <a href="https://author.papers237.duckdns.org/register">
+              <Button size="lg">
+                <PenTool className="w-5 h-5" />
+                Devenir auteur
+              </Button>
+            </a>
           </FadeIn>
         </div>
       </section>
@@ -89,11 +91,11 @@ export default function AuteursPage() {
             <CheckCircle className="w-12 h-12 mx-auto mb-4 text-white/80" />
             <h2 className="text-3xl font-bold mb-4">Prêt à publier ?</h2>
             <p className="text-white/80 mb-8">Créez votre compte auteur dès maintenant et publiez votre premier livre.</p>
-            <Link href="/contact">
+            <a href="https://author.papers237.duckdns.org/register">
               <Button variant="outline" size="lg" className="border-white text-white hover:bg-white hover:text-primary">
                 Commencer <ArrowRight className="w-5 h-5" />
               </Button>
-            </Link>
+            </a>
           </FadeIn>
         </div>
       </section>
