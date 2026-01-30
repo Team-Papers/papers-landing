@@ -1,18 +1,34 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import Image from "next/image";
-import { Menu, X } from "lucide-react";
+import { Menu, X, User, LogOut, ChevronDown } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { NAV_LINKS } from "@/lib/constants";
+import { useAuth } from "@/lib/auth-context";
 import Button from "@/components/ui/Button";
 import { cn } from "@/lib/utils";
 
 export default function Navbar() {
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [dropdownOpen, setDropdownOpen] = useState(false);
+  const dropdownRef = useRef<HTMLDivElement>(null);
   const pathname = usePathname();
+  const { user, loading, logout } = useAuth();
+
+  useEffect(() => {
+    function handleClickOutside(e: MouseEvent) {
+      if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
+        setDropdownOpen(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  const initials = user ? `${user.firstName[0]}${user.lastName[0]}`.toUpperCase() : "";
 
   return (
     <header className="fixed top-0 left-0 right-0 z-50 bg-white/80 backdrop-blur-lg border-b border-border/50">
@@ -47,15 +63,68 @@ export default function Navbar() {
           ))}
         </div>
 
+        {/* Desktop Auth */}
         <div className="hidden md:flex items-center gap-3">
-          <a href="https://author.papers237.duckdns.org/login">
-            <Button variant="ghost" size="sm">
-              Se connecter
-            </Button>
-          </a>
-          <a href="https://author.papers237.duckdns.org/register">
-            <Button size="sm">Commencer</Button>
-          </a>
+          {loading ? (
+            <div className="w-8 h-8 rounded-full bg-border animate-pulse" />
+          ) : user ? (
+            <div className="relative" ref={dropdownRef}>
+              <button
+                onClick={() => setDropdownOpen(!dropdownOpen)}
+                className="flex items-center gap-2 cursor-pointer rounded-lg px-2 py-1.5 hover:bg-primary/5 transition-colors"
+              >
+                <div className="w-8 h-8 rounded-full bg-primary text-white flex items-center justify-center text-xs font-bold">
+                  {initials}
+                </div>
+                <span className="text-sm font-medium text-text-primary">
+                  {user.firstName}
+                </span>
+                <ChevronDown className={cn("w-4 h-4 text-text-muted transition-transform", dropdownOpen && "rotate-180")} />
+              </button>
+
+              <AnimatePresence>
+                {dropdownOpen && (
+                  <motion.div
+                    initial={{ opacity: 0, y: 4 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: 4 }}
+                    transition={{ duration: 0.15 }}
+                    className="absolute right-0 mt-2 w-48 bg-white rounded-lg border border-border shadow-lg py-1 z-50"
+                  >
+                    <Link
+                      href="/profil"
+                      onClick={() => setDropdownOpen(false)}
+                      className="flex items-center gap-2 px-4 py-2.5 text-sm text-text-secondary hover:text-primary hover:bg-primary/5 transition-colors"
+                    >
+                      <User className="w-4 h-4" />
+                      Mon profil
+                    </Link>
+                    <button
+                      onClick={async () => {
+                        setDropdownOpen(false);
+                        await logout();
+                      }}
+                      className="flex items-center gap-2 px-4 py-2.5 text-sm text-text-secondary hover:text-danger hover:bg-danger/5 transition-colors w-full cursor-pointer"
+                    >
+                      <LogOut className="w-4 h-4" />
+                      Déconnexion
+                    </button>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
+          ) : (
+            <>
+              <Link href="/connexion">
+                <Button variant="ghost" size="sm">
+                  Se connecter
+                </Button>
+              </Link>
+              <Link href="/inscription">
+                <Button size="sm">Commencer</Button>
+              </Link>
+            </>
+          )}
         </div>
 
         <button
@@ -67,6 +136,7 @@ export default function Navbar() {
         </button>
       </nav>
 
+      {/* Mobile Menu */}
       <AnimatePresence>
         {mobileOpen && (
           <motion.div
@@ -92,16 +162,45 @@ export default function Navbar() {
                 </Link>
               ))}
               <div className="pt-3 border-t border-border space-y-2">
-                <a href="https://author.papers237.duckdns.org/login">
-                  <Button variant="outline" size="sm" className="w-full">
-                    Se connecter
-                  </Button>
-                </a>
-                <a href="https://author.papers237.duckdns.org/register">
-                  <Button size="sm" className="w-full">
-                    Commencer
-                  </Button>
-                </a>
+                {user ? (
+                  <>
+                    <Link href="/profil" onClick={() => setMobileOpen(false)}>
+                      <div className="flex items-center gap-3 py-2">
+                        <div className="w-8 h-8 rounded-full bg-primary text-white flex items-center justify-center text-xs font-bold">
+                          {initials}
+                        </div>
+                        <span className="text-sm font-medium text-text-primary">
+                          {user.firstName} {user.lastName}
+                        </span>
+                      </div>
+                    </Link>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="w-full"
+                      onClick={async () => {
+                        setMobileOpen(false);
+                        await logout();
+                      }}
+                    >
+                      <LogOut className="w-4 h-4" />
+                      Déconnexion
+                    </Button>
+                  </>
+                ) : (
+                  <>
+                    <Link href="/connexion" onClick={() => setMobileOpen(false)}>
+                      <Button variant="outline" size="sm" className="w-full">
+                        Se connecter
+                      </Button>
+                    </Link>
+                    <Link href="/inscription" onClick={() => setMobileOpen(false)}>
+                      <Button size="sm" className="w-full">
+                        Commencer
+                      </Button>
+                    </Link>
+                  </>
+                )}
               </div>
             </div>
           </motion.div>
