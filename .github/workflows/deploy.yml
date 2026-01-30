@@ -1,0 +1,26 @@
+name: Deploy Papers Landing
+
+on:
+  push:
+    branches:
+      - develop
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Deploy to VPS
+        uses: appleboy/ssh-action@v1
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USER }}
+          password: ${{ secrets.VPS_PASSWORD }}
+          script: |
+            source ~/.nvm/nvm.sh
+            cd /home/softengine/papers-landing
+            git pull origin develop
+            npm ci
+            npm run build
+            cp -r .next/static .next/standalone/.next/
+            cp -r public .next/standalone/
+            pm2 restart papers-landing
