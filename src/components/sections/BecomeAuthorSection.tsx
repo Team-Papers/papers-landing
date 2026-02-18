@@ -13,17 +13,17 @@ const perks = [
 
 export default function BecomeAuthorSection() {
   return (
-    <section className="py-20 bg-gradient-to-br from-primary to-primary-dark text-white">
+    <section className="py-20 bg-gradient-to-br from-primary-800 to-primary-900 text-white">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="grid md:grid-cols-2 gap-12 items-center">
           <FadeIn direction="left">
-            <span className="text-primary-light text-sm font-semibold uppercase tracking-wider">
+            <span className="text-primary-200 text-sm font-semibold uppercase tracking-wider">
               Pour les auteurs
             </span>
             <h2 className="text-3xl md:text-4xl font-bold mt-2 mb-6">
               Publiez vos oeuvres et gagnez 70% des revenus
             </h2>
-            <p className="text-white/80 mb-8 text-lg">
+            <p className="text-white/90 mb-8 text-lg">
               Rejoignez la communauté d&apos;auteurs Papers et faites découvrir vos
               livres à des milliers de lecteurs au Cameroun et en Afrique.
             </p>
@@ -48,11 +48,11 @@ export default function BecomeAuthorSection() {
           <FadeIn direction="right">
             <div className="bg-white/10 backdrop-blur rounded-2xl p-8 text-center">
               <div className="text-6xl md:text-7xl font-bold mb-2">70/30</div>
-              <p className="text-white/70 text-lg">Auteur / Plateforme</p>
+              <p className="text-white/80 text-lg">Auteur / Plateforme</p>
               <div className="mt-6 w-full bg-white/20 rounded-full h-4 overflow-hidden">
                 <div className="bg-white h-full rounded-full" style={{ width: "70%" }} />
               </div>
-              <p className="mt-4 text-sm text-white/60">
+              <p className="mt-4 text-sm text-white/70">
                 Le modèle de rémunération le plus avantageux pour les auteurs en Afrique
               </p>
             </div>
