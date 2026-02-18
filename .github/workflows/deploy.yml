@@ -23,4 +23,5 @@ jobs:
             npm run build
             cp -r .next/static .next/standalone/.next/
             cp -r public .next/standalone/
-            pm2 restart papers-landing
+            pm2 restart papers-landing 2>/dev/null || cd .next/standalone && PORT=3020 pm2 start server.js --name papers-landing
+            pm2 save
