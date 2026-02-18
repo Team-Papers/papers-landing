@@ -26,13 +26,13 @@ export interface ApiCategory {
 }
 
 interface PaginatedResponse<T> {
-  status: string;
+  success: boolean;
   data: T[];
-  meta: { page: number; limit: number; total: number; totalPages: number };
+  pagination: { page: number; limit: number; total: number; totalPages: number };
 }
 
 interface SuccessResponse<T> {
-  status: string;
+  success: boolean;
   data: T;
 }
 
@@ -55,7 +55,7 @@ export async function fetchBooks(params: {
   if (!res.ok) return { books: [], total: 0 };
 
   const json: PaginatedResponse<ApiBook> = await res.json();
-  return { books: json.data, total: json.meta.total };
+  return { books: json.data, total: json.pagination.total };
 }
 
 export async function fetchCategories(): Promise<ApiCategory[]> {
@@ -80,11 +80,11 @@ export async function fetchStats(): Promise<{ totalBooks: number; totalAuthors: 
 
   if (booksRes.ok) {
     const json = await booksRes.json();
-    totalBooks = json.meta?.total ?? 0;
+    totalBooks = json.pagination?.total ?? 0;
   }
   if (authorsRes.ok) {
     const json = await authorsRes.json();
-    totalAuthors = json.meta?.total ?? 0;
+    totalAuthors = json.pagination?.total ?? 0;
   }
 
   return { totalBooks, totalAuthors };
