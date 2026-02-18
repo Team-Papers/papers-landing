@@ -252,7 +252,7 @@ export const SITE_CONFIG = {
   company: "Seed Soft Engine",
   email: "contact@papers.cm",
   phone: "+237 6XX XXX XXX",
-  address: "Douala, Cameroun",
+  address: "Yaounde, Cameroun",
   social: {
     facebook: "https://facebook.com/papers.cm",
     twitter: "https://twitter.com/papers_cm",

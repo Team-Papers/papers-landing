@@ -67,8 +67,8 @@ export default function CataloguePage() {
         />
 
         <div className="flex flex-col sm:flex-row gap-4 mb-10">
-          <div className="relative flex-1">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-text-muted" />
+          <div className="relative flex-1 flex items-center">
+            <Search className="absolute left-3 w-5 h-5 text-text-muted pointer-events-none" />
             <input
               type="text"
               placeholder="Rechercher un titre ou auteur..."
@@ -115,9 +115,6 @@ export default function CataloguePage() {
           </div>
         ) : (
           <>
-            <p className="text-sm text-text-muted mb-6">
-              {total} livre{total > 1 ? "s" : ""} trouve{total > 1 ? "s" : ""}
-            </p>
             <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
               {books.map((book, i) => (
                 <FadeIn key={book.id} delay={i * 0.03}>
