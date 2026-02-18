@@ -84,39 +84,6 @@
 }
 
 /* ============================================
-   DARK MODE SUPPORT
-   ============================================ */
-@media (prefers-color-scheme: dark) {
-  :root:not([data-theme="light"]) {
-    --color-surface: #0F172A;
-    --color-surface-dim: #1E293B;
-    --color-surface-container: #334155;
-    --color-surface-container-high: #475569;
-    --color-on-surface: #F8FAFC;
-    --color-on-surface-variant: #CBD5E1;
-    --color-on-surface-muted: #64748B;
-    --color-outline: #334155;
-    --color-outline-variant: #1E293B;
-    --glass-bg: rgba(15, 23, 42, 0.8);
-    --glass-border: rgba(255, 255, 255, 0.1);
-  }
-}
-
-[data-theme="dark"] {
-  --color-surface: #0F172A;
-  --color-surface-dim: #1E293B;
-  --color-surface-container: #334155;
-  --color-surface-container-high: #475569;
-  --color-on-surface: #F8FAFC;
-  --color-on-surface-variant: #CBD5E1;
-  --color-on-surface-muted: #64748B;
-  --color-outline: #334155;
-  --color-outline-variant: #1E293B;
-  --glass-bg: rgba(15, 23, 42, 0.8);
-  --glass-border: rgba(255, 255, 255, 0.1);
-}
-
-/* ============================================
    BASE STYLES
    ============================================ */
 html {
