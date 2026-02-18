@@ -1,0 +1,91 @@
+const API_URL = process.env.NEXT_PUBLIC_API_URL || "https://api.papers237.duckdns.org/api/v1";
+
+export interface ApiBook {
+  id: string;
+  title: string;
+  slug: string;
+  description: string | null;
+  coverUrl: string | null;
+  price: number;
+  pageCount: number | null;
+  language: string | null;
+  author: {
+    id: string;
+    penName: string | null;
+    user: { firstName: string; lastName: string; avatarUrl: string | null };
+  };
+  _count: { reviews: number };
+}
+
+export interface ApiCategory {
+  id: string;
+  name: string;
+  slug: string;
+  _count: { books: number };
+  children?: ApiCategory[];
+}
+
+interface PaginatedResponse<T> {
+  status: string;
+  data: T[];
+  meta: { page: number; limit: number; total: number; totalPages: number };
+}
+
+interface SuccessResponse<T> {
+  status: string;
+  data: T;
+}
+
+export async function fetchBooks(params: {
+  page?: number;
+  limit?: number;
+  q?: string;
+  categoryId?: string;
+} = {}): Promise<{ books: ApiBook[]; total: number }> {
+  const searchParams = new URLSearchParams();
+  if (params.page) searchParams.set("page", String(params.page));
+  if (params.limit) searchParams.set("limit", String(params.limit));
+  if (params.q) searchParams.set("q", params.q);
+  if (params.categoryId) searchParams.set("categoryId", params.categoryId);
+
+  const res = await fetch(`${API_URL}/books?${searchParams.toString()}`, {
+    next: { revalidate: 60 },
+  });
+
+  if (!res.ok) return { books: [], total: 0 };
+
+  const json: PaginatedResponse<ApiBook> = await res.json();
+  return { books: json.data, total: json.meta.total };
+}
+
+export async function fetchCategories(): Promise<ApiCategory[]> {
+  const res = await fetch(`${API_URL}/categories`, {
+    next: { revalidate: 300 },
+  });
+
+  if (!res.ok) return [];
+
+  const json: SuccessResponse<ApiCategory[]> = await res.json();
+  return json.data;
+}
+
+export async function fetchStats(): Promise<{ totalBooks: number; totalAuthors: number }> {
+  const [booksRes, authorsRes] = await Promise.all([
+    fetch(`${API_URL}/books?limit=1`, { next: { revalidate: 300 } }),
+    fetch(`${API_URL}/authors?limit=1`, { next: { revalidate: 300 } }),
+  ]);
+
+  let totalBooks = 0;
+  let totalAuthors = 0;
+
+  if (booksRes.ok) {
+    const json = await booksRes.json();
+    totalBooks = json.meta?.total ?? 0;
+  }
+  if (authorsRes.ok) {
+    const json = await authorsRes.json();
+    totalAuthors = json.meta?.total ?? 0;
+  }
+
+  return { totalBooks, totalAuthors };
+}

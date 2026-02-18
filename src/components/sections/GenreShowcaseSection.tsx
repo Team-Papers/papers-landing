@@ -1,40 +1,47 @@
 "use client";
 
-import { BookOpen, Feather, FileText, Lightbulb, Image, Baby, Rocket, Landmark } from "lucide-react";
+import { useEffect, useState } from "react";
+import { BookOpen } from "lucide-react";
 import SectionHeading from "@/components/ui/SectionHeading";
 import FadeIn from "@/components/ui/FadeIn";
-import { GENRES } from "@/lib/constants";
 import Link from "next/link";
+import { fetchCategories, type ApiCategory } from "@/lib/api";
 
-const iconMap: Record<string, React.ElementType> = {
-  BookOpen, Feather, FileText, Lightbulb, Image, Baby, Rocket, Landmark,
-};
+const COLORS = ["#4285F4", "#9C27B0", "#FF9800", "#4CAF50", "#E91E63", "#00BCD4", "#673AB7", "#795548"];
 
 export default function GenreShowcaseSection() {
+  const [categories, setCategories] = useState<ApiCategory[]>([]);
+
+  useEffect(() => {
+    fetchCategories().then(setCategories);
+  }, []);
+
+  if (categories.length === 0) return null;
+
   return (
     <section className="py-20">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <SectionHeading
           title="Genres populaires"
-          subtitle="Explorez une grande variété de genres littéraires."
+          subtitle="Explorez une grande variete de genres litteraires."
         />
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-          {GENRES.map((genre, i) => {
-            const Icon = iconMap[genre.icon] || BookOpen;
+          {categories.map((cat, i) => {
+            const color = COLORS[i % COLORS.length];
             return (
-              <FadeIn key={genre.name} delay={i * 0.05}>
+              <FadeIn key={cat.id} delay={i * 0.05}>
                 <Link
-                  href={`/catalogue?genre=${genre.name}`}
+                  href={`/catalogue?genre=${cat.name}`}
                   className="group flex flex-col items-center p-6 rounded-xl border border-border hover:border-primary/30 hover:shadow-md transition-all"
                 >
                   <div
                     className="w-14 h-14 rounded-2xl flex items-center justify-center mb-3 transition-transform group-hover:scale-110"
-                    style={{ backgroundColor: `${genre.color}15` }}
+                    style={{ backgroundColor: `${color}15` }}
                   >
-                    <Icon className="w-7 h-7" style={{ color: genre.color }} />
+                    <BookOpen className="w-7 h-7" style={{ color }} />
                   </div>
-                  <h3 className="font-semibold text-text-primary mb-1">{genre.name}</h3>
-                  <p className="text-xs text-text-muted">{genre.count} livres</p>
+                  <h3 className="font-semibold text-text-primary mb-1">{cat.name}</h3>
+                  <p className="text-xs text-text-muted">{cat._count.books} livres</p>
                 </Link>
               </FadeIn>
             );
