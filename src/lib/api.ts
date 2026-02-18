@@ -25,67 +25,65 @@ export interface ApiCategory {
   children?: ApiCategory[];
 }
 
-interface PaginatedResponse<T> {
-  success: boolean;
-  data: T[];
-  pagination: { page: number; limit: number; total: number; totalPages: number };
-}
-
-interface SuccessResponse<T> {
-  success: boolean;
-  data: T;
-}
-
 export async function fetchBooks(params: {
   page?: number;
   limit?: number;
   q?: string;
   categoryId?: string;
 } = {}): Promise<{ books: ApiBook[]; total: number }> {
-  const searchParams = new URLSearchParams();
-  if (params.page) searchParams.set("page", String(params.page));
-  if (params.limit) searchParams.set("limit", String(params.limit));
-  if (params.q) searchParams.set("q", params.q);
-  if (params.categoryId) searchParams.set("categoryId", params.categoryId);
+  try {
+    const searchParams = new URLSearchParams();
+    if (params.page) searchParams.set("page", String(params.page));
+    if (params.limit) searchParams.set("limit", String(params.limit));
+    if (params.q) searchParams.set("q", params.q);
+    if (params.categoryId) searchParams.set("categoryId", params.categoryId);
 
-  const res = await fetch(`${API_URL}/books?${searchParams.toString()}`, {
-    next: { revalidate: 60 },
-  });
+    const res = await fetch(`${API_URL}/books?${searchParams.toString()}`);
+    if (!res.ok) return { books: [], total: 0 };
 
-  if (!res.ok) return { books: [], total: 0 };
-
-  const json: PaginatedResponse<ApiBook> = await res.json();
-  return { books: json.data, total: json.pagination.total };
+    const json = await res.json();
+    return {
+      books: json.data ?? [],
+      total: json.pagination?.total ?? 0,
+    };
+  } catch {
+    return { books: [], total: 0 };
+  }
 }
 
 export async function fetchCategories(): Promise<ApiCategory[]> {
-  const res = await fetch(`${API_URL}/categories`, {
-    next: { revalidate: 300 },
-  });
+  try {
+    const res = await fetch(`${API_URL}/categories`);
+    if (!res.ok) return [];
 
-  if (!res.ok) return [];
-
-  const json: SuccessResponse<ApiCategory[]> = await res.json();
-  return json.data;
+    const json = await res.json();
+    return json.data ?? [];
+  } catch {
+    return [];
+  }
 }
 
 export async function fetchStats(): Promise<{ totalBooks: number; totalAuthors: number }> {
-  const [booksRes, authorsRes] = await Promise.all([
-    fetch(`${API_URL}/books?limit=1`, { next: { revalidate: 300 } }),
-    fetch(`${API_URL}/authors?limit=1`, { next: { revalidate: 300 } }),
-  ]);
+  try {
+    const [booksRes, authorsRes] = await Promise.all([
+      fetch(`${API_URL}/books?limit=1`),
+      fetch(`${API_URL}/authors?limit=1`),
+    ]);
 
-  let totalBooks = 0;
-  let totalAuthors = 0;
+    let totalBooks = 0;
+    let totalAuthors = 0;
 
-  if (booksRes.ok) {
-    const json = await booksRes.json();
-    totalBooks = json.pagination?.total ?? 0;
+    if (booksRes.ok) {
+      const json = await booksRes.json();
+      totalBooks = json.pagination?.total ?? 0;
+    }
+    if (authorsRes.ok) {
+      const json = await authorsRes.json();
+      totalAuthors = json.pagination?.total ?? 0;
+    }
+
+    return { totalBooks, totalAuthors };
+  } catch {
+    return { totalBooks: 0, totalAuthors: 0 };
   }
-  if (authorsRes.ok) {
-    const json = await authorsRes.json();
-    totalAuthors = json.pagination?.total ?? 0;
-  }
-
-  return { totalBooks, totalAuthors };
 }
