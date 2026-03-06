@@ -19,7 +19,11 @@ export default function AnimatedCounter({ value, suffix = "", duration = 2 }: An
     const controls = animate(0, value, {
       duration,
       onUpdate(v) {
-        setDisplay(Math.floor(v).toLocaleString("fr-FR"));
+        setDisplay(
+          Number.isInteger(value)
+            ? Math.floor(v).toLocaleString("fr-FR")
+            : v.toLocaleString("fr-FR", { minimumFractionDigits: 1, maximumFractionDigits: 1 })
+        );
       },
     });
     return () => controls.stop();
