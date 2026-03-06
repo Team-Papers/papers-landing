@@ -1,103 +1,89 @@
-const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001";
+const API_URL = process.env.NEXT_PUBLIC_API_URL || "https://api.papers237.duckdns.org/api/v1";
 
-interface ApiResponse<T = unknown> {
-  data?: T;
-  error?: string;
-}
-
-interface AuthTokens {
-  accessToken: string;
-  refreshToken: string;
-}
-
-interface LoginResponse {
-  user: UserData;
-  tokens: AuthTokens;
-}
-
-export interface UserData {
+export interface ApiBook {
   id: string;
-  firstName: string;
-  lastName: string;
-  email: string;
-  role: string;
-  emailVerified: boolean;
+  title: string;
+  slug: string;
+  description: string | null;
+  coverUrl: string | null;
+  price: number;
+  pageCount: number | null;
+  language: string | null;
+  author: {
+    id: string;
+    penName: string | null;
+    user: { firstName: string; lastName: string; avatarUrl: string | null };
+  };
+  _count: { reviews: number };
 }
 
-async function apiFetch<T>(
-  endpoint: string,
-  options: RequestInit = {}
-): Promise<ApiResponse<T>> {
+export interface ApiCategory {
+  id: string;
+  name: string;
+  slug: string;
+  _count: { books: number };
+  children?: ApiCategory[];
+}
+
+export async function fetchBooks(params: {
+  page?: number;
+  limit?: number;
+  q?: string;
+  categoryId?: string;
+} = {}): Promise<{ books: ApiBook[]; total: number }> {
   try {
-    const res = await fetch(`${API_URL}${endpoint}`, {
-      headers: {
-        "Content-Type": "application/json",
-        ...options.headers,
-      },
-      ...options,
-    });
+    const searchParams = new URLSearchParams();
+    if (params.page) searchParams.set("page", String(params.page));
+    if (params.limit) searchParams.set("limit", String(params.limit));
+    if (params.q) searchParams.set("q", params.q);
+    if (params.categoryId) searchParams.set("categoryId", params.categoryId);
 
-    const body = await res.json().catch(() => null);
+    const res = await fetch(`${API_URL}/books?${searchParams.toString()}`);
+    if (!res.ok) return { books: [], total: 0 };
 
-    if (!res.ok) {
-      return { error: body?.message || `Erreur ${res.status}` };
-    }
-
-    return { data: body as T };
+    const json = await res.json();
+    return {
+      books: json.data ?? [],
+      total: json.pagination?.total ?? 0,
+    };
   } catch {
-    return { error: "Impossible de contacter le serveur" };
+    return { books: [], total: 0 };
   }
 }
 
-export async function apiLogin(
-  email: string,
-  password: string
-): Promise<ApiResponse<LoginResponse>> {
-  return apiFetch<LoginResponse>("/auth/login", {
-    method: "POST",
-    body: JSON.stringify({ email, password }),
-  });
+export async function fetchCategories(): Promise<ApiCategory[]> {
+  try {
+    const res = await fetch(`${API_URL}/categories`);
+    if (!res.ok) return [];
+
+    const json = await res.json();
+    return json.data ?? [];
+  } catch {
+    return [];
+  }
 }
 
-export async function apiRegister(data: {
-  firstName: string;
-  lastName: string;
-  email: string;
-  password: string;
-}): Promise<ApiResponse<LoginResponse>> {
-  return apiFetch<LoginResponse>("/auth/register", {
-    method: "POST",
-    body: JSON.stringify({ ...data, role: "READER" }),
-  });
-}
+export async function fetchStats(): Promise<{ totalBooks: number; totalAuthors: number }> {
+  try {
+    const [booksRes, authorsRes] = await Promise.all([
+      fetch(`${API_URL}/books?limit=1`),
+      fetch(`${API_URL}/authors?limit=1`),
+    ]);
 
-export async function apiGetMe(token: string): Promise<ApiResponse<UserData>> {
-  return apiFetch<UserData>("/auth/me", {
-    headers: { Authorization: `Bearer ${token}` },
-  });
-}
+    let totalBooks = 0;
+    let totalAuthors = 0;
 
-export async function apiLogout(refreshToken: string): Promise<ApiResponse<void>> {
-  return apiFetch<void>("/auth/logout", {
-    method: "POST",
-    body: JSON.stringify({ refreshToken }),
-  });
-}
+    if (booksRes.ok) {
+      const json = await booksRes.json();
+      totalBooks = json.pagination?.total ?? 0;
+    }
+    if (authorsRes.ok) {
+      const json = await authorsRes.json();
+      totalAuthors = json.pagination?.total ?? 0;
+    }
 
-export function saveTokens(tokens: AuthTokens) {
-  localStorage.setItem("accessToken", tokens.accessToken);
-  localStorage.setItem("refreshToken", tokens.refreshToken);
-}
-
-export function getAccessToken(): string | null {
-  return localStorage.getItem("accessToken");
-}
-
-export function getRefreshToken(): string | null {
-  return localStorage.getItem("refreshToken");
-}
-
-export function clearTokens() {
-  localStorage.removeItem("accessToken");
-  localStorage.removeItem("refreshToken");
+    return { totalBooks, totalAuthors };
+  } catch {
+    return { totalBooks: 0, totalAuthors: 0 };
+  }
 }

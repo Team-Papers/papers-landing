@@ -2,7 +2,6 @@ import type { Book, Testimonial, Stat, Feature, Genre, FAQItem, TeamMember, NavL
 
 export const NAV_LINKS: NavLink[] = [
   { label: "Accueil", href: "/" },
-  { label: "Catalogue", href: "/catalogue" },
   { label: "Auteurs", href: "/auteurs" },
   { label: "Lecteurs", href: "/lecteurs" },
   { label: "À Propos", href: "/a-propos" },
@@ -10,9 +9,9 @@ export const NAV_LINKS: NavLink[] = [
 ];
 
 export const STATS: Stat[] = [
-  { label: "Livres publiés", value: 2500, suffix: "+" },
-  { label: "Auteurs actifs", value: 450, suffix: "+" },
-  { label: "Lecteurs", value: 15000, suffix: "+" },
+  { label: "Lecteurs", value: 1500, suffix: "+" },
+  { label: "Auteurs actifs", value: 200, suffix: "+" },
+  { label: "Livres publiés", value: 220, suffix: "+" },
   { label: "Revenus redistribués", value: 12, suffix: "M FCFA" },
 ];
 
@@ -150,32 +149,32 @@ export const TESTIMONIALS: Testimonial[] = [
     name: "Sandrine M.",
     role: "Auteure de romans",
     avatar: "",
-    content: "Papers m'a permis de publier mon premier roman et d'atteindre des lecteurs dans tout le Cameroun. Les outils sont intuitifs et le paiement mobile facilite tout !",
+    content: "Papers a completement change ma vie d'ecrivaine. Avant, publier un livre au Cameroun etait un parcours du combattant : trouver un editeur, negocier les droits, attendre des mois... Avec Papers, j'ai publie mon premier roman en quelques clics et il est desormais accessible a des lecteurs dans toute l'Afrique. Le paiement via Mobile Money a ete un vrai game changer — mes lecteurs peuvent acheter instantanement, et moi je recois 70% des revenus chaque mois. C'est la plateforme que tous les auteurs africains attendaient.",
     rating: 5,
   },
   {
     id: "2",
     name: "Jean-Paul K.",
-    role: "Lecteur passionné",
+    role: "Lecteur passionne, Abidjan",
     avatar: "",
-    content: "Enfin une plateforme qui comprend nos réalités ! Je paie avec Orange Money et je lis mes livres même sans connexion. C'est exactement ce qu'il nous fallait.",
+    content: "Depuis la Cote d'Ivoire, j'ai enfin acces a des livres d'auteurs africains sans passer par Amazon ou des librairies importees. Je paie avec Orange Money, je telecharge mes livres et je lis meme quand je n'ai pas de connexion internet. Papers a rendu la lecture accessible a tous les Africains.",
     rating: 5,
   },
   {
     id: "3",
     name: "Dr. Amina B.",
-    role: "Enseignante & Auteure",
+    role: "Enseignante & Auteure, Douala",
     avatar: "",
-    content: "70% des revenus pour les auteurs, c'est inédit en Afrique. Papers valorise vraiment le travail des écrivains camerounais.",
+    content: "En tant qu'enseignante, je recommande Papers a tous mes etudiants. La diversite du catalogue est impressionnante et les prix en FCFA sont abordables. 70% des revenus pour les auteurs, c'est une revolution dans l'edition africaine !",
     rating: 5,
   },
   {
     id: "4",
     name: "Patrick N.",
-    role: "Éditeur indépendant",
+    role: "Editeur independant, Dakar",
     avatar: "",
-    content: "La qualité de la plateforme est remarquable. Mes auteurs sont ravis et nos ventes ont augmenté de 40% depuis qu'on utilise Papers.",
-    rating: 4,
+    content: "Nous avons migre tout notre catalogue sur Papers et les resultats sont remarquables. Nos ventes ont augmente de 40% grace a la facilite du paiement mobile. C'est la meilleure plateforme d'edition numerique en Afrique francophone, sans hesiter.",
+    rating: 5,
   },
 ];
 
@@ -250,9 +249,9 @@ export const SITE_CONFIG = {
   description: "Plateforme camerounaise de publication et lecture de livres numériques avec paiement mobile.",
   url: "https://papers237.duckdns.org",
   company: "Seed Soft Engine",
-  email: "contact@papers.cm",
+  email: "papersbooks237@gmail.com",
   phone: "+237 6XX XXX XXX",
-  address: "Douala, Cameroun",
+  address: "Yaounde, Cameroun",
   social: {
     facebook: "https://facebook.com/papers.cm",
     twitter: "https://twitter.com/papers_cm",
