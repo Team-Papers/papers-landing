@@ -4,15 +4,15 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
-import { User, Mail, Shield, ShieldCheck, BookOpen, Library, ChevronRight, BadgeCheck, Clock, Sparkles, PenTool, ExternalLink, ShoppingBag, Loader2, Heart, Newspaper, Layers, Bell } from "lucide-react";
+import { User, Mail, Shield, ShieldCheck, BookOpen, Library, ChevronRight, BadgeCheck, Clock, Sparkles, PenTool, ExternalLink, ShoppingBag, Loader2, Heart, Newspaper, Layers, Bell, Pencil, Check, X as XIcon } from "lucide-react";
 import FadeIn from "@/components/ui/FadeIn";
 import Button from "@/components/ui/Button";
 import { useAuth } from "@/lib/auth";
-import { fetchPurchaseHistory, type PurchaseResponse } from "@/lib/api";
+import { fetchPurchaseHistory, updateProfile, type PurchaseResponse } from "@/lib/api";
 import { cn } from "@/lib/utils";
 
 export default function ProfilPage() {
-  const { user, loading } = useAuth();
+  const { user, loading, updateUser } = useAuth();
   const router = useRouter();
 
   useEffect(() => {
@@ -34,9 +34,36 @@ export default function ProfilPage() {
   const [purchases, setPurchases] = useState<PurchaseResponse[]>([]);
   const [purchasesLoading, setPurchasesLoading] = useState(false);
   const [showPurchases, setShowPurchases] = useState(false);
+  const [editing, setEditing] = useState(false);
+  const [editFirst, setEditFirst] = useState("");
+  const [editLast, setEditLast] = useState("");
+  const [editLoading, setEditLoading] = useState(false);
+  const [editError, setEditError] = useState("");
 
   const initials = `${user.firstName[0]}${user.lastName[0]}`.toUpperCase();
   const roleName = user.role === "AUTHOR" ? "Auteur & Lecteur" : "Lecteur";
+
+  function startEditing() {
+    if (!user) return;
+    setEditFirst(user.firstName);
+    setEditLast(user.lastName);
+    setEditError("");
+    setEditing(true);
+  }
+
+  async function handleSaveProfile() {
+    if (!user || !editFirst.trim() || !editLast.trim()) { setEditError("Les champs ne peuvent pas etre vides"); return; }
+    setEditLoading(true);
+    setEditError("");
+    const result = await updateProfile(user.id, { firstName: editFirst.trim(), lastName: editLast.trim() });
+    if (result.success) {
+      updateUser({ firstName: editFirst.trim(), lastName: editLast.trim() });
+      setEditing(false);
+    } else {
+      setEditError(result.message || "Erreur lors de la mise a jour");
+    }
+    setEditLoading(false);
+  }
 
   function handleShowPurchases() {
     if (showPurchases) { setShowPurchases(false); return; }
@@ -106,18 +133,52 @@ export default function ProfilPage() {
                   <div className="w-9 h-9 rounded-xl bg-primary/10 flex items-center justify-center">
                     <User className="w-4.5 h-4.5 text-primary" />
                   </div>
-                  <h2 className="font-display font-bold text-on-surface">Informations personnelles</h2>
+                  <h2 className="font-display font-bold text-on-surface flex-1">Informations personnelles</h2>
+                  {!editing && (
+                    <button onClick={startEditing} className="flex items-center gap-1.5 text-sm text-primary font-medium hover:underline cursor-pointer">
+                      <Pencil className="w-3.5 h-3.5" />
+                      Modifier
+                    </button>
+                  )}
                 </div>
                 <div className="p-6 space-y-5">
-                  <InfoRow icon={User} label="Nom complet" value={`${user.firstName} ${user.lastName}`} />
-                  <InfoRow icon={Mail} label="Adresse e-mail" value={user.email} />
-                  <InfoRow
-                    icon={user.emailVerified ? ShieldCheck : Shield}
-                    label="Statut e-mail"
-                    value={user.emailVerified ? "Verifie" : "Non verifie"}
-                    valueClass={user.emailVerified ? "text-secondary" : "text-warning"}
-                  />
-                  <InfoRow icon={BadgeCheck} label="Role" value={roleName} />
+                  {editing ? (
+                    <>
+                      {editError && <div className="bg-error-light text-error text-sm rounded-xl px-4 py-3 font-medium">{editError}</div>}
+                      <div className="grid grid-cols-2 gap-3">
+                        <div>
+                          <label className="block text-xs text-on-surface-muted mb-1">Prenom</label>
+                          <input value={editFirst} onChange={(e) => setEditFirst(e.target.value)} className="w-full px-3 py-2.5 rounded-xl border border-outline text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary" />
+                        </div>
+                        <div>
+                          <label className="block text-xs text-on-surface-muted mb-1">Nom</label>
+                          <input value={editLast} onChange={(e) => setEditLast(e.target.value)} className="w-full px-3 py-2.5 rounded-xl border border-outline text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary" />
+                        </div>
+                      </div>
+                      <div className="flex gap-2 justify-end">
+                        <button onClick={() => setEditing(false)} disabled={editLoading} className="flex items-center gap-1.5 px-4 py-2 rounded-xl border border-outline text-sm font-medium text-on-surface-variant hover:bg-surface-dim cursor-pointer">
+                          <XIcon className="w-3.5 h-3.5" />
+                          Annuler
+                        </button>
+                        <button onClick={handleSaveProfile} disabled={editLoading} className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-primary text-white text-sm font-medium hover:bg-primary-dark cursor-pointer disabled:opacity-50">
+                          {editLoading ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Check className="w-3.5 h-3.5" />}
+                          Enregistrer
+                        </button>
+                      </div>
+                    </>
+                  ) : (
+                    <>
+                      <InfoRow icon={User} label="Nom complet" value={`${user.firstName} ${user.lastName}`} />
+                      <InfoRow icon={Mail} label="Adresse e-mail" value={user.email} />
+                      <InfoRow
+                        icon={user.emailVerified ? ShieldCheck : Shield}
+                        label="Statut e-mail"
+                        value={user.emailVerified ? "Verifie" : "Non verifie"}
+                        valueClass={user.emailVerified ? "text-secondary" : "text-warning"}
+                      />
+                      <InfoRow icon={BadgeCheck} label="Role" value={roleName} />
+                    </>
+                  )}
                 </div>
               </div>
             </FadeIn>

@@ -6,7 +6,7 @@ import Link from "next/link";
 import Image from "next/image";
 import {
   ArrowLeft, Star, BookOpen, Loader2, ShoppingCart, Globe, FileText,
-  Hash, Calendar, BookMarked, ChevronRight, User as UserIcon, Smartphone, Heart, X as XIcon, Send,
+  Hash, Calendar, BookMarked, ChevronRight, User as UserIcon, Smartphone, Heart, X as XIcon, Send, Share2,
 } from "lucide-react";
 import { useAuth } from "@/lib/auth";
 import { useCache } from "@/lib/cache";
@@ -155,14 +155,30 @@ export default function BookDetailPage() {
         <div className="absolute -bottom-40 -right-40 w-[400px] h-[400px] rounded-full bg-accent/10 blur-[100px]" />
 
         <div className="relative max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
-          {/* Back button */}
-          <button
-            onClick={() => router.back()}
-            className="inline-flex items-center gap-1.5 text-sm text-white/70 hover:text-white mb-6 cursor-pointer transition-colors"
-          >
-            <ArrowLeft className="w-4 h-4" />
-            Retour
-          </button>
+          {/* Back + Share */}
+          <div className="flex items-center justify-between mb-6">
+            <button
+              onClick={() => router.back()}
+              className="inline-flex items-center gap-1.5 text-sm text-white/70 hover:text-white cursor-pointer transition-colors"
+            >
+              <ArrowLeft className="w-4 h-4" />
+              Retour
+            </button>
+            <button
+              onClick={() => {
+                const url = window.location.href;
+                if (navigator.share) {
+                  navigator.share({ title: book.title, text: `Decouvrez "${book.title}" sur Papers`, url });
+                } else {
+                  navigator.clipboard.writeText(url);
+                }
+              }}
+              className="inline-flex items-center gap-1.5 text-sm text-white/70 hover:text-white cursor-pointer transition-colors"
+            >
+              <Share2 className="w-4 h-4" />
+              Partager
+            </button>
+          </div>
 
           <div className="flex flex-col md:flex-row gap-8 items-start">
             {/* Cover */}

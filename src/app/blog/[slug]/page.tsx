@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
-import { ArrowLeft, Heart, MessageCircle, Calendar, Loader2, Newspaper, Send, User as UserIcon } from "lucide-react";
+import { ArrowLeft, Heart, MessageCircle, Calendar, Loader2, Newspaper, Send, User as UserIcon, Share2 } from "lucide-react";
 import { useAuth } from "@/lib/auth";
 import { fetchArticleBySlug, fetchComments, toggleArticleLike, postComment, type Article, type Comment } from "@/lib/api";
 import FadeIn from "@/components/ui/FadeIn";
@@ -95,10 +95,26 @@ export default function ArticlePage() {
       <section className="relative pt-24 pb-8 overflow-hidden bg-gradient-hero">
         <div className="absolute inset-0 pattern-african opacity-30" />
         <div className="relative max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
-          <button onClick={() => router.back()} className="inline-flex items-center gap-1.5 text-sm text-white/70 hover:text-white mb-6 cursor-pointer transition-colors">
-            <ArrowLeft className="w-4 h-4" />
-            Retour
-          </button>
+          <div className="flex items-center justify-between mb-6">
+            <button onClick={() => router.back()} className="inline-flex items-center gap-1.5 text-sm text-white/70 hover:text-white cursor-pointer transition-colors">
+              <ArrowLeft className="w-4 h-4" />
+              Retour
+            </button>
+            <button
+              onClick={() => {
+                const url = window.location.href;
+                if (navigator.share) {
+                  navigator.share({ title: article.title, url });
+                } else {
+                  navigator.clipboard.writeText(url);
+                }
+              }}
+              className="inline-flex items-center gap-1.5 text-sm text-white/70 hover:text-white cursor-pointer transition-colors"
+            >
+              <Share2 className="w-4 h-4" />
+              Partager
+            </button>
+          </div>
           <FadeIn>
             <h1 className="font-display text-3xl sm:text-4xl font-extrabold text-white leading-tight mb-4">
               {article.title}

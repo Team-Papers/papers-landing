@@ -4,6 +4,7 @@ import { usePathname } from "next/navigation";
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
 import ScrollProgress from "@/components/ui/ScrollProgress";
+import SmartAppBanner from "@/components/ui/SmartAppBanner";
 
 const AUTH_PAGES = ["/connexion", "/inscription"];
 
@@ -21,6 +22,7 @@ export default function LayoutShell({ children }: { children: React.ReactNode })
       <Navbar />
       <main>{children}</main>
       <Footer />
+      <SmartAppBanner />
     </>
   );
 }
