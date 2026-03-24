@@ -1,26 +1,18 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
-import { useRouter } from "next/navigation";
-import { Search, Star, BookOpen, Loader2, ChevronLeft, ChevronRight, ChevronDown, Sparkles, Library, SlidersHorizontal, X } from "lucide-react";
+import Link from "next/link";
+import { Search, Star, BookOpen, Loader2, ChevronLeft, ChevronRight, ChevronDown, Library, SlidersHorizontal, X } from "lucide-react";
 import Image from "next/image";
-import Badge from "@/components/ui/Badge";
 import FadeIn from "@/components/ui/FadeIn";
-import { fetchBooks, fetchCategories, type ApiBook, type ApiCategory } from "@/lib/api";
-import { useAuth } from "@/lib/auth";
+import { type ApiBook, type ApiCategory } from "@/lib/api";
+import { useCache } from "@/lib/cache";
 import { cn } from "@/lib/utils";
 
 const VISIBLE_CATEGORIES = 8;
 
 export default function CataloguePage() {
-  const { user, loading: authLoading } = useAuth();
-  const router = useRouter();
-
-  useEffect(() => {
-    if (!authLoading && !user) {
-      router.replace("/connexion");
-    }
-  }, [user, authLoading, router]);
+  const { getCategories, getBooks, prefetchBookDetail } = useCache();
 
   const [search, setSearch] = useState("");
   const [debouncedSearch, setDebouncedSearch] = useState("");
@@ -39,15 +31,12 @@ export default function CataloguePage() {
   }, [search]);
 
   useEffect(() => {
-    fetchCategories().then((cats) => {
-      const sorted = [...cats].sort((a, b) => b._count.books - a._count.books);
-      setCategories(sorted);
-    });
-  }, []);
+    getCategories().then(setCategories);
+  }, [getCategories]);
 
   const loadBooks = useCallback(async () => {
     setLoading(true);
-    const result = await fetchBooks({
+    const result = await getBooks({
       page,
       limit,
       q: debouncedSearch || undefined,
@@ -56,7 +45,7 @@ export default function CataloguePage() {
     setBooks(result.books);
     setTotal(result.total);
     setLoading(false);
-  }, [page, debouncedSearch, selectedCategory]);
+  }, [page, debouncedSearch, selectedCategory, getBooks]);
 
   useEffect(() => {
     loadBooks();
@@ -228,7 +217,11 @@ export default function CataloguePage() {
               <div className="grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
                 {books.map((book, i) => (
                   <FadeIn key={book.id} delay={i * 0.03}>
-                    <div className="group bg-white rounded-2xl border border-outline/50 overflow-hidden transition-all duration-300 hover:shadow-xl hover:shadow-primary/5 hover:-translate-y-1 h-full flex flex-col">
+                    <Link
+                      href={`/catalogue/${book.id}`}
+                      onMouseEnter={() => prefetchBookDetail(book.id)}
+                      className="group bg-white rounded-2xl border border-outline/50 overflow-hidden transition-all duration-300 hover:shadow-xl hover:shadow-primary/5 hover:-translate-y-1 h-full flex flex-col"
+                    >
                       {/* Cover */}
                       <div className="relative h-56 overflow-hidden bg-gradient-to-br from-primary/5 to-accent/5">
                         {book.coverUrl ? (
@@ -275,7 +268,7 @@ export default function CataloguePage() {
                           {book.description || ""}
                         </p>
                       </div>
-                    </div>
+                    </Link>
                   </FadeIn>
                 ))}
               </div>

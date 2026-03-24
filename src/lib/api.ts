@@ -1,5 +1,10 @@
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "https://api.papers237.duckdns.org/api/v1";
 
+function getAuthHeaders(): HeadersInit {
+  const token = typeof window !== "undefined" ? localStorage.getItem("papers_token") : null;
+  return token ? { "Content-Type": "application/json", Authorization: `Bearer ${token}` } : { "Content-Type": "application/json" };
+}
+
 export interface ApiBook {
   id: string;
   title: string;
@@ -23,6 +28,45 @@ export interface ApiCategory {
   slug: string;
   _count: { books: number };
   children?: ApiCategory[];
+}
+
+export interface ApiBookDetail {
+  id: string;
+  title: string;
+  slug: string;
+  description: string | null;
+  coverUrl: string | null;
+  price: number;
+  pageCount: number | null;
+  language: string | null;
+  isbn: string | null;
+  fileFormat: string | null;
+  publishedAt: string | null;
+  createdAt: string;
+  author: {
+    id: string;
+    penName: string | null;
+    bio: string | null;
+    photoUrl: string | null;
+    user: { firstName: string; lastName: string; avatarUrl: string | null };
+  };
+  categories: { id: string; category: { id: string; name: string; slug: string } }[];
+  _count: { reviews: number; purchases: number };
+}
+
+export interface ReviewItem {
+  id: string;
+  rating: number;
+  comment: string | null;
+  createdAt: string;
+  user: { id: string; firstName: string; lastName: string; avatarUrl: string | null };
+}
+
+export interface ReviewsResponse {
+  data: ReviewItem[];
+  averageRating: number;
+  totalRatings: number;
+  ratingDistribution: Record<string, number>;
 }
 
 export async function fetchBooks(params: {
@@ -85,5 +129,393 @@ export async function fetchStats(): Promise<{ totalBooks: number; totalAuthors: 
     return { totalBooks, totalAuthors };
   } catch {
     return { totalBooks: 0, totalAuthors: 0 };
+  }
+}
+
+export async function fetchBookDetail(id: string): Promise<ApiBookDetail | null> {
+  try {
+    const res = await fetch(`${API_URL}/books/${id}`);
+    if (!res.ok) return null;
+    const json = await res.json();
+    return json.data ?? null;
+  } catch {
+    return null;
+  }
+}
+
+export async function fetchReviews(bookId: string): Promise<ReviewsResponse | null> {
+  try {
+    const res = await fetch(`${API_URL}/reviews/books/${bookId}/reviews?limit=20`);
+    if (!res.ok) return null;
+    const json = await res.json();
+    return {
+      data: json.data ?? [],
+      averageRating: json.averageRating ?? 0,
+      totalRatings: json.totalRatings ?? 0,
+      ratingDistribution: json.ratingDistribution ?? {},
+    };
+  } catch {
+    return null;
+  }
+}
+
+export async function fetchTrendingBooks(limit = 10): Promise<ApiBook[]> {
+  try {
+    const res = await fetch(`${API_URL}/books/trending?limit=${limit}`);
+    if (!res.ok) return [];
+    const json = await res.json();
+    return json.data ?? [];
+  } catch {
+    return [];
+  }
+}
+
+export async function fetchNewBooks(limit = 10): Promise<ApiBook[]> {
+  try {
+    const res = await fetch(`${API_URL}/books/new?limit=${limit}`);
+    if (!res.ok) return [];
+    const json = await res.json();
+    return json.data ?? [];
+  } catch {
+    return [];
+  }
+}
+
+export async function fetchAuthorBooks(authorId: string, limit = 20): Promise<ApiBook[]> {
+  try {
+    const res = await fetch(`${API_URL}/books?authorId=${authorId}&limit=${limit}`);
+    if (!res.ok) return [];
+    const json = await res.json();
+    return json.data ?? [];
+  } catch {
+    return [];
+  }
+}
+
+export async function fetchRecommendedBooks(limit = 10): Promise<ApiBook[]> {
+  try {
+    const res = await fetch(`${API_URL}/books/recommended?limit=${limit}`);
+    if (!res.ok) return [];
+    const json = await res.json();
+    return json.data ?? [];
+  } catch {
+    return [];
+  }
+}
+
+export async function fetchAuthor(id: string): Promise<{
+  id: string;
+  penName: string | null;
+  bio: string | null;
+  photoUrl: string | null;
+  user: { firstName: string; lastName: string; avatarUrl: string | null };
+} | null> {
+  try {
+    const res = await fetch(`${API_URL}/authors/${id}`);
+    if (!res.ok) return null;
+    const json = await res.json();
+    return json.data ?? null;
+  } catch {
+    return null;
+  }
+}
+
+// ─── Authenticated API calls ───
+
+export interface PurchaseResponse {
+  id: string;
+  bookId: string;
+  amount: number;
+  paymentMethod: string;
+  phoneNumber: string;
+  status: "PENDING" | "COMPLETED" | "FAILED";
+  paymentRef: string | null;
+  operator: string | null;
+  failureCode: string | null;
+  failureMessage: string | null;
+  createdAt: string;
+}
+
+export async function createPurchase(bookId: string, paymentMethod: "MTN" | "OM", phoneNumber: string): Promise<{ success: boolean; data?: PurchaseResponse; message?: string }> {
+  try {
+    const res = await fetch(`${API_URL}/purchases`, {
+      method: "POST",
+      headers: getAuthHeaders(),
+      body: JSON.stringify({ bookId, paymentMethod, phoneNumber }),
+    });
+    const json = await res.json();
+    if (!res.ok) return { success: false, message: json.message || "Erreur lors du paiement" };
+    return { success: true, data: json.data };
+  } catch {
+    return { success: false, message: "Erreur de connexion au serveur" };
+  }
+}
+
+export async function getPurchaseStatus(purchaseId: string): Promise<{ status: string; failureCode?: string; failureMessage?: string } | null> {
+  try {
+    const res = await fetch(`${API_URL}/purchases/${purchaseId}/status`, {
+      headers: getAuthHeaders(),
+    });
+    if (!res.ok) return null;
+    const json = await res.json();
+    return json.data ?? json;
+  } catch {
+    return null;
+  }
+}
+
+export async function checkLibraryOwnership(bookId: string): Promise<boolean> {
+  try {
+    const res = await fetch(`${API_URL}/library/${bookId}`, {
+      headers: getAuthHeaders(),
+    });
+    return res.ok;
+  } catch {
+    return false;
+  }
+}
+
+// ─── Library ───
+
+export interface LibraryBook {
+  bookId: string;
+  progress: number;
+  currentPage: number;
+  lastReadAt: string | null;
+  createdAt: string;
+  book: {
+    id: string;
+    title: string;
+    slug: string;
+    coverUrl: string | null;
+    price: number;
+    author: { id: string; penName: string | null; user: { firstName: string; lastName: string } };
+  };
+}
+
+export async function fetchLibrary(): Promise<LibraryBook[]> {
+  try {
+    const res = await fetch(`${API_URL}/library`, { headers: getAuthHeaders() });
+    if (!res.ok) return [];
+    const json = await res.json();
+    return json.data ?? [];
+  } catch {
+    return [];
+  }
+}
+
+export async function fetchFavorites(): Promise<LibraryBook[]> {
+  try {
+    const res = await fetch(`${API_URL}/library/favorites`, { headers: getAuthHeaders() });
+    if (!res.ok) return [];
+    const json = await res.json();
+    return json.data ?? [];
+  } catch {
+    return [];
+  }
+}
+
+// ─── Blog ───
+
+export interface Article {
+  id: string;
+  title: string;
+  slug: string;
+  content: string;
+  excerpt: string | null;
+  coverImageUrl: string | null;
+  status: string;
+  publishedAt: string | null;
+  createdAt: string;
+  author: { id: string; firstName: string; lastName: string; avatarUrl: string | null };
+  _count: { likes: number; comments: number };
+  isLiked?: boolean;
+}
+
+export interface Comment {
+  id: string;
+  content: string;
+  createdAt: string;
+  user: { id: string; firstName: string; lastName: string; avatarUrl: string | null };
+}
+
+export async function fetchArticles(page = 1, limit = 12): Promise<{ articles: Article[]; total: number }> {
+  try {
+    const res = await fetch(`${API_URL}/blog?page=${page}&limit=${limit}`);
+    if (!res.ok) return { articles: [], total: 0 };
+    const json = await res.json();
+    return { articles: json.data ?? [], total: json.pagination?.total ?? 0 };
+  } catch {
+    return { articles: [], total: 0 };
+  }
+}
+
+export async function fetchArticleBySlug(slug: string): Promise<Article | null> {
+  try {
+    const res = await fetch(`${API_URL}/blog/slug/${slug}`, { headers: getAuthHeaders() });
+    if (!res.ok) return null;
+    const json = await res.json();
+    return json.data ?? null;
+  } catch {
+    return null;
+  }
+}
+
+export async function toggleArticleLike(articleId: string): Promise<boolean> {
+  try {
+    const res = await fetch(`${API_URL}/blog/${articleId}/like`, {
+      method: "POST",
+      headers: getAuthHeaders(),
+    });
+    return res.ok;
+  } catch {
+    return false;
+  }
+}
+
+export async function fetchComments(articleId: string): Promise<Comment[]> {
+  try {
+    const res = await fetch(`${API_URL}/blog/${articleId}/comments`);
+    if (!res.ok) return [];
+    const json = await res.json();
+    return json.data ?? [];
+  } catch {
+    return [];
+  }
+}
+
+export async function postComment(articleId: string, content: string): Promise<{ success: boolean; data?: Comment }> {
+  try {
+    const res = await fetch(`${API_URL}/blog/${articleId}/comments`, {
+      method: "POST",
+      headers: getAuthHeaders(),
+      body: JSON.stringify({ content }),
+    });
+    const json = await res.json();
+    if (!res.ok) return { success: false };
+    return { success: true, data: json.data };
+  } catch {
+    return { success: false };
+  }
+}
+
+// ─── Collections ───
+
+export interface Collection {
+  id: string;
+  name: string;
+  description: string | null;
+  coverImageUrl: string | null;
+  _count: { books: number };
+}
+
+export interface CollectionDetail extends Collection {
+  books: { book: ApiBook }[];
+}
+
+export async function fetchCollections(): Promise<Collection[]> {
+  try {
+    const res = await fetch(`${API_URL}/collections`);
+    if (!res.ok) return [];
+    const json = await res.json();
+    return json.data ?? [];
+  } catch {
+    return [];
+  }
+}
+
+export async function fetchCollectionDetail(id: string): Promise<CollectionDetail | null> {
+  try {
+    const res = await fetch(`${API_URL}/collections/${id}`);
+    if (!res.ok) return null;
+    const json = await res.json();
+    return json.data ?? null;
+  } catch {
+    return null;
+  }
+}
+
+// ─── Notifications ───
+
+export interface Notification {
+  id: string;
+  type: string;
+  title: string;
+  message: string;
+  isRead: boolean;
+  createdAt: string;
+}
+
+export async function fetchNotifications(page = 1, limit = 20): Promise<{ notifications: Notification[]; total: number }> {
+  try {
+    const res = await fetch(`${API_URL}/notifications?page=${page}&limit=${limit}`, { headers: getAuthHeaders() });
+    if (!res.ok) return { notifications: [], total: 0 };
+    const json = await res.json();
+    return { notifications: json.data ?? [], total: json.pagination?.total ?? 0 };
+  } catch {
+    return { notifications: [], total: 0 };
+  }
+}
+
+export async function fetchUnreadCount(): Promise<number> {
+  try {
+    const res = await fetch(`${API_URL}/notifications/unread-count`, { headers: getAuthHeaders() });
+    if (!res.ok) return 0;
+    const json = await res.json();
+    return json.data?.count ?? json.count ?? 0;
+  } catch {
+    return 0;
+  }
+}
+
+export async function markNotificationRead(id: string): Promise<boolean> {
+  try {
+    const res = await fetch(`${API_URL}/notifications/${id}/read`, {
+      method: "PATCH",
+      headers: getAuthHeaders(),
+    });
+    return res.ok;
+  } catch {
+    return false;
+  }
+}
+
+export async function markAllNotificationsRead(): Promise<boolean> {
+  try {
+    const res = await fetch(`${API_URL}/notifications/mark-all-read`, {
+      method: "POST",
+      headers: getAuthHeaders(),
+    });
+    return res.ok;
+  } catch {
+    return false;
+  }
+}
+
+// ─── Profile ───
+
+export async function fetchPurchaseHistory(page = 1, limit = 20): Promise<{ purchases: PurchaseResponse[]; total: number }> {
+  try {
+    const res = await fetch(`${API_URL}/purchases?page=${page}&limit=${limit}`, { headers: getAuthHeaders() });
+    if (!res.ok) return { purchases: [], total: 0 };
+    const json = await res.json();
+    return { purchases: json.data ?? [], total: json.pagination?.total ?? 0 };
+  } catch {
+    return { purchases: [], total: 0 };
+  }
+}
+
+export async function updateProfile(userId: string, data: { firstName?: string; lastName?: string }): Promise<{ success: boolean; message?: string }> {
+  try {
+    const res = await fetch(`${API_URL}/users/${userId}`, {
+      method: "PUT",
+      headers: getAuthHeaders(),
+      body: JSON.stringify(data),
+    });
+    const json = await res.json();
+    if (!res.ok) return { success: false, message: json.message };
+    return { success: true };
+  } catch {
+    return { success: false, message: "Erreur de connexion" };
   }
 }

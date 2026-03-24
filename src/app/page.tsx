@@ -1,5 +1,8 @@
 import HeroSection from "@/components/sections/HeroSection";
 import StatsSection from "@/components/sections/StatsSection";
+import TrendingBooksSection from "@/components/sections/TrendingBooksSection";
+import NewBooksSection from "@/components/sections/NewBooksSection";
+import CollectionsPreviewSection from "@/components/sections/CollectionsPreviewSection";
 import HowItWorksSection from "@/components/sections/HowItWorksSection";
 import FeaturesSection from "@/components/sections/FeaturesSection";
 import GenreShowcaseSection from "@/components/sections/GenreShowcaseSection";
@@ -13,6 +16,9 @@ export default function HomePage() {
     <>
       <HeroSection />
       <StatsSection />
+      <TrendingBooksSection />
+      <NewBooksSection />
+      <CollectionsPreviewSection />
       <HowItWorksSection />
       <FeaturesSection />
       <GenreShowcaseSection />

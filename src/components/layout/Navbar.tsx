@@ -4,16 +4,18 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import Image from "next/image";
-import { Menu, X, LogIn, UserCircle, LogOut, User, PenTool, ExternalLink } from "lucide-react";
+import { Menu, X, LogIn, LogOut, User, PenTool, ExternalLink, Bell, Library, Newspaper, Layers, BookOpen } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useAuth } from "@/lib/auth";
+import { fetchUnreadCount } from "@/lib/api";
 import Button from "@/components/ui/Button";
 import { cn } from "@/lib/utils";
 
 const PUBLIC_LINKS = [
   { label: "Accueil", href: "/" },
-  { label: "Auteurs", href: "/auteurs" },
-  { label: "Lecteurs", href: "/lecteurs" },
+  { label: "Catalogue", href: "/catalogue" },
+  { label: "Blog", href: "/blog" },
+  { label: "Collections", href: "/collections" },
   { label: "À Propos", href: "/a-propos" },
   { label: "Contact", href: "/contact" },
 ];
@@ -21,16 +23,16 @@ const PUBLIC_LINKS = [
 const AUTH_LINKS = [
   { label: "Accueil", href: "/" },
   { label: "Catalogue", href: "/catalogue" },
-  { label: "Auteurs", href: "/auteurs" },
-  { label: "Lecteurs", href: "/lecteurs" },
-  { label: "À Propos", href: "/a-propos" },
-  { label: "Contact", href: "/contact" },
+  { label: "Blog", href: "/blog" },
+  { label: "Bibliotheque", href: "/bibliotheque" },
+  { label: "Collections", href: "/collections" },
 ];
 
 export default function Navbar() {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const [showLogoutModal, setShowLogoutModal] = useState(false);
+  const [unreadCount, setUnreadCount] = useState(0);
   const pathname = usePathname();
   const { user, loading, logout } = useAuth();
   const router = useRouter();
@@ -44,6 +46,14 @@ export default function Navbar() {
     onScroll();
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
+
+  // Fetch unread notifications count
+  useEffect(() => {
+    if (!user) { setUnreadCount(0); return; }
+    fetchUnreadCount().then(setUnreadCount);
+    const interval = setInterval(() => fetchUnreadCount().then(setUnreadCount), 30000);
+    return () => clearInterval(interval);
+  }, [user]);
 
   const showDark = isHome && !scrolled;
   const navLinks = user ? AUTH_LINKS : PUBLIC_LINKS;
@@ -87,7 +97,7 @@ export default function Navbar() {
             </span>
           </Link>
 
-          <div className="hidden md:flex items-center gap-8">
+          <div className="hidden md:flex items-center gap-6">
             {navLinks.map((link) => (
               <Link
                 key={link.href}
@@ -112,11 +122,28 @@ export default function Navbar() {
             ))}
           </div>
 
-          <div className="hidden md:flex items-center gap-3">
+          <div className="hidden md:flex items-center gap-2">
             {!loading && (
               <>
                 {user ? (
-                  <UserMenu showDark={showDark} onLogout={() => setShowLogoutModal(true)} />
+                  <>
+                    {/* Notifications bell */}
+                    <Link
+                      href="/notifications"
+                      className={cn(
+                        "relative p-2 rounded-xl transition-colors",
+                        showDark ? "hover:bg-white/10" : "hover:bg-surface-dim"
+                      )}
+                    >
+                      <Bell className={cn("w-5 h-5", showDark ? "text-white/80" : "text-on-surface-variant")} />
+                      {unreadCount > 0 && (
+                        <span className="absolute -top-0.5 -right-0.5 min-w-[18px] h-[18px] rounded-full bg-error text-white text-[10px] font-bold flex items-center justify-center px-1">
+                          {unreadCount > 9 ? "9+" : unreadCount}
+                        </span>
+                      )}
+                    </Link>
+                    <UserMenu showDark={showDark} onLogout={() => setShowLogoutModal(true)} />
+                  </>
                 ) : (
                   <>
                     <Link href="/connexion">
@@ -180,15 +207,30 @@ export default function Navbar() {
                                 {user.firstName[0]}
                               </span>
                             </div>
-                            <div>
+                            <div className="flex-1">
                               <p className="text-sm font-medium text-on-surface">{user.firstName} {user.lastName}</p>
                               <p className="text-xs text-on-surface-muted">{user.email}</p>
                             </div>
+                            {unreadCount > 0 && (
+                              <Link href="/notifications" onClick={() => setMobileOpen(false)} className="relative p-1">
+                                <Bell className="w-5 h-5 text-on-surface-variant" />
+                                <span className="absolute -top-1 -right-1 min-w-[16px] h-[16px] rounded-full bg-error text-white text-[9px] font-bold flex items-center justify-center px-0.5">
+                                  {unreadCount > 9 ? "9+" : unreadCount}
+                                </span>
+                              </Link>
+                            )}
                           </div>
                           <Link href="/profil" onClick={() => setMobileOpen(false)}>
                             <Button variant="ghost" size="sm" className="w-full">
                               <User className="w-4 h-4" />
                               Mon profil
+                            </Button>
+                          </Link>
+                          <Link href="/notifications" onClick={() => setMobileOpen(false)}>
+                            <Button variant="ghost" size="sm" className="w-full">
+                              <Bell className="w-4 h-4" />
+                              Notifications
+                              {unreadCount > 0 && <span className="ml-auto text-xs bg-error text-white rounded-full px-1.5 py-0.5">{unreadCount}</span>}
                             </Button>
                           </Link>
                           {user.role === "AUTHOR" && (
@@ -335,32 +377,27 @@ function UserMenu({ showDark, onLogout }: { showDark: boolean; onLogout: () => v
                 <p className="text-xs text-on-surface-muted truncate">{user.email}</p>
               </div>
               <div className="p-1.5 space-y-0.5">
-                <Link
-                  href="/profil"
-                  onClick={() => setOpen(false)}
-                  className="w-full flex items-center gap-2.5 px-3 py-2 text-sm text-on-surface-variant hover:bg-surface-dim rounded-lg transition-colors"
-                >
+                <Link href="/profil" onClick={() => setOpen(false)} className="w-full flex items-center gap-2.5 px-3 py-2 text-sm text-on-surface-variant hover:bg-surface-dim rounded-lg transition-colors">
                   <User className="w-4 h-4" />
                   Mon profil
                 </Link>
+                <Link href="/bibliotheque" onClick={() => setOpen(false)} className="w-full flex items-center gap-2.5 px-3 py-2 text-sm text-on-surface-variant hover:bg-surface-dim rounded-lg transition-colors">
+                  <Library className="w-4 h-4" />
+                  Bibliotheque
+                </Link>
+                <Link href="/notifications" onClick={() => setOpen(false)} className="w-full flex items-center gap-2.5 px-3 py-2 text-sm text-on-surface-variant hover:bg-surface-dim rounded-lg transition-colors">
+                  <Bell className="w-4 h-4" />
+                  Notifications
+                </Link>
                 {user.role === "AUTHOR" && (
-                  <a
-                    href="https://author.papers237.duckdns.org"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    onClick={() => setOpen(false)}
-                    className="w-full flex items-center gap-2.5 px-3 py-2 text-sm text-primary hover:bg-primary/5 rounded-lg transition-colors"
-                  >
+                  <a href="https://author.papers237.duckdns.org" target="_blank" rel="noopener noreferrer" onClick={() => setOpen(false)} className="w-full flex items-center gap-2.5 px-3 py-2 text-sm text-primary hover:bg-primary/5 rounded-lg transition-colors">
                     <PenTool className="w-4 h-4" />
                     Espace auteur
                     <ExternalLink className="w-3 h-3 ml-auto opacity-50" />
                   </a>
                 )}
                 <button
-                  onClick={() => {
-                    setOpen(false);
-                    onLogout();
-                  }}
+                  onClick={() => { setOpen(false); onLogout(); }}
                   className="w-full flex items-center gap-2.5 px-3 py-2 text-sm text-error hover:bg-error-light rounded-lg transition-colors cursor-pointer"
                 >
                   <LogOut className="w-4 h-4" />

@@ -1,7 +1,7 @@
 "use client";
 
-import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { useState, Suspense } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
 import { Mail, Lock, Eye, EyeOff, Loader2, ArrowRight, User } from "lucide-react";
@@ -10,8 +10,18 @@ import Button from "@/components/ui/Button";
 import FadeIn from "@/components/ui/FadeIn";
 
 export default function InscriptionPage() {
+  return (
+    <Suspense>
+      <InscriptionContent />
+    </Suspense>
+  );
+}
+
+function InscriptionContent() {
   const { register, loginWithGoogle } = useAuth();
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const redirectTo = searchParams.get("redirect") || "/catalogue";
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
   const [email, setEmail] = useState("");
@@ -33,7 +43,7 @@ export default function InscriptionPage() {
     setLoading(true);
     const result = await register({ email, password, firstName, lastName });
     if (result.success) {
-      router.push("/catalogue");
+      router.push(redirectTo);
     } else {
       setError(result.message || "Erreur lors de l'inscription");
     }
@@ -45,7 +55,7 @@ export default function InscriptionPage() {
     setGoogleLoading(true);
     const result = await loginWithGoogle();
     if (result.success) {
-      router.push("/catalogue");
+      router.push(redirectTo);
     } else {
       setError(result.message || "Erreur avec Google");
     }
@@ -204,7 +214,7 @@ export default function InscriptionPage() {
 
           <p className="text-center text-sm text-on-surface-muted mt-6">
             Deja un compte ?{" "}
-            <Link href="/connexion" className="text-primary font-semibold hover:underline">
+            <Link href={redirectTo !== "/catalogue" ? `/connexion?redirect=${redirectTo}` : "/connexion"} className="text-primary font-semibold hover:underline">
               Se connecter
             </Link>
           </p>

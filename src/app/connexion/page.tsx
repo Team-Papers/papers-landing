@@ -1,7 +1,7 @@
 "use client";
 
-import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { useState, Suspense } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
 import { Mail, Lock, Eye, EyeOff, Loader2, ArrowRight } from "lucide-react";
@@ -10,8 +10,18 @@ import Button from "@/components/ui/Button";
 import FadeIn from "@/components/ui/FadeIn";
 
 export default function ConnexionPage() {
+  return (
+    <Suspense>
+      <ConnexionContent />
+    </Suspense>
+  );
+}
+
+function ConnexionContent() {
   const { login, loginWithGoogle } = useAuth();
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const redirectTo = searchParams.get("redirect") || "/catalogue";
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
@@ -26,7 +36,7 @@ export default function ConnexionPage() {
 
     const result = await login(email, password);
     if (result.success) {
-      router.push("/catalogue");
+      router.push(redirectTo);
     } else {
       setError(result.message || "Erreur de connexion");
     }
@@ -38,7 +48,7 @@ export default function ConnexionPage() {
     setGoogleLoading(true);
     const result = await loginWithGoogle();
     if (result.success) {
-      router.push("/catalogue");
+      router.push(redirectTo);
     } else {
       setError(result.message || "Erreur avec Google");
     }
@@ -157,7 +167,7 @@ export default function ConnexionPage() {
 
           <p className="text-center text-sm text-on-surface-muted mt-6">
             Pas encore de compte ?{" "}
-            <Link href="/inscription" className="text-primary font-semibold hover:underline">
+            <Link href={redirectTo !== "/catalogue" ? `/inscription?redirect=${redirectTo}` : "/inscription"} className="text-primary font-semibold hover:underline">
               Creer un compte
             </Link>
           </p>

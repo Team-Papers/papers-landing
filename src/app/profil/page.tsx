@@ -1,13 +1,14 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
-import { User, Mail, Shield, ShieldCheck, BookOpen, Library, ChevronRight, BadgeCheck, Clock, Sparkles, PenTool, ExternalLink } from "lucide-react";
+import { User, Mail, Shield, ShieldCheck, BookOpen, Library, ChevronRight, BadgeCheck, Clock, Sparkles, PenTool, ExternalLink, ShoppingBag, Loader2, Heart, Newspaper, Layers, Bell } from "lucide-react";
 import FadeIn from "@/components/ui/FadeIn";
 import Button from "@/components/ui/Button";
 import { useAuth } from "@/lib/auth";
+import { fetchPurchaseHistory, type PurchaseResponse } from "@/lib/api";
 import { cn } from "@/lib/utils";
 
 export default function ProfilPage() {
@@ -30,8 +31,22 @@ export default function ProfilPage() {
     );
   }
 
+  const [purchases, setPurchases] = useState<PurchaseResponse[]>([]);
+  const [purchasesLoading, setPurchasesLoading] = useState(false);
+  const [showPurchases, setShowPurchases] = useState(false);
+
   const initials = `${user.firstName[0]}${user.lastName[0]}`.toUpperCase();
   const roleName = user.role === "AUTHOR" ? "Auteur & Lecteur" : "Lecteur";
+
+  function handleShowPurchases() {
+    if (showPurchases) { setShowPurchases(false); return; }
+    setPurchasesLoading(true);
+    setShowPurchases(true);
+    fetchPurchaseHistory(1, 10).then(({ purchases: p }) => {
+      setPurchases(p);
+      setPurchasesLoading(false);
+    });
+  }
 
   return (
     <>
@@ -107,6 +122,58 @@ export default function ProfilPage() {
               </div>
             </FadeIn>
 
+            {/* Purchase history */}
+            <FadeIn delay={0.08} className="md:col-span-2">
+              <div className="bg-white rounded-2xl border border-outline/50 overflow-hidden">
+                <button
+                  onClick={handleShowPurchases}
+                  className="w-full px-6 py-4 border-b border-outline/50 flex items-center gap-3 hover:bg-surface-dim/50 transition-colors cursor-pointer"
+                >
+                  <div className="w-9 h-9 rounded-xl bg-accent/10 flex items-center justify-center">
+                    <ShoppingBag className="w-4.5 h-4.5 text-accent-700" />
+                  </div>
+                  <h2 className="font-display font-bold text-on-surface flex-1 text-left">Historique d&apos;achats</h2>
+                  <ChevronRight className={cn("w-4 h-4 text-on-surface-muted transition-transform", showPurchases && "rotate-90")} />
+                </button>
+                {showPurchases && (
+                  <div className="p-6">
+                    {purchasesLoading ? (
+                      <div className="flex justify-center py-6"><Loader2 className="w-6 h-6 text-primary animate-spin" /></div>
+                    ) : purchases.length === 0 ? (
+                      <p className="text-sm text-on-surface-muted text-center py-6">Aucun achat pour le moment.</p>
+                    ) : (
+                      <div className="space-y-3">
+                        {purchases.map((p) => (
+                          <div key={p.id} className="flex items-center gap-4 p-3 rounded-xl bg-surface-dim">
+                            <div className={cn(
+                              "w-2 h-2 rounded-full flex-shrink-0",
+                              p.status === "COMPLETED" ? "bg-secondary" : p.status === "FAILED" ? "bg-error" : "bg-accent"
+                            )} />
+                            <div className="flex-1 min-w-0">
+                              <p className="text-sm font-medium text-on-surface truncate">Achat #{p.id.slice(0, 8)}</p>
+                              <p className="text-xs text-on-surface-muted">
+                                {new Date(p.createdAt).toLocaleDateString("fr-FR", { day: "numeric", month: "short", year: "numeric" })}
+                                {" "}&middot;{" "}{p.paymentMethod}
+                              </p>
+                            </div>
+                            <div className="text-right">
+                              <p className="text-sm font-bold text-on-surface">{Number(p.amount).toLocaleString("fr-FR")} FCFA</p>
+                              <p className={cn(
+                                "text-xs font-medium",
+                                p.status === "COMPLETED" ? "text-secondary" : p.status === "FAILED" ? "text-error" : "text-accent"
+                              )}>
+                                {p.status === "COMPLETED" ? "Reussi" : p.status === "FAILED" ? "Echoue" : "En cours"}
+                              </p>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+            </FadeIn>
+
             {/* Quick actions */}
             <FadeIn delay={0.1}>
               <div className="space-y-6">
@@ -118,8 +185,10 @@ export default function ProfilPage() {
                     <h2 className="font-display font-bold text-on-surface">Acces rapide</h2>
                   </div>
                   <div className="p-3">
-                    <QuickLink href="/catalogue" icon={Library} label="Catalogue" desc="Explorer les livres" />
-                    <QuickLink href="/lecteurs" icon={BookOpen} label="Espace lecteurs" desc="Fonctionnalites" />
+                    <QuickLink href="/bibliotheque" icon={Library} label="Bibliotheque" desc="Vos livres achetes" />
+                    <QuickLink href="/catalogue" icon={BookOpen} label="Catalogue" desc="Explorer les livres" />
+                    <QuickLink href="/blog" icon={Newspaper} label="Blog" desc="Articles et actualites" />
+                    <QuickLink href="/collections" icon={Layers} label="Collections" desc="Selections curatees" />
                     {user.role === "AUTHOR" && (
                       <a
                         href="https://author.papers237.duckdns.org"

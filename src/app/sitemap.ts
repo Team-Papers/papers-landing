@@ -6,8 +6,12 @@ export default function sitemap(): MetadataRoute.Sitemap {
   const pages = [
     "",
     "/catalogue",
+    "/blog",
+    "/collections",
     "/auteurs",
     "/lecteurs",
+    "/bibliotheque",
+    "/notifications",
     "/a-propos",
     "/contact",
     "/faq",
