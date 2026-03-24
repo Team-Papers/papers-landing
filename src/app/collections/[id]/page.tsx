@@ -111,9 +111,11 @@ export default function CollectionDetailPage() {
                       <h3 className="font-display font-bold text-on-surface mb-1 line-clamp-1 group-hover:text-primary transition-colors">
                         {book.title}
                       </h3>
-                      <p className="text-sm text-primary/70 font-medium mb-2">
-                        {book.author.penName || `${book.author.user.firstName} ${book.author.user.lastName}`}
-                      </p>
+                      {book.author && (
+                        <p className="text-sm text-primary/70 font-medium mb-2">
+                          {book.author.penName || `${book.author.user.firstName} ${book.author.user.lastName}`}
+                        </p>
+                      )}
                       {book.description && (
                         <p className="text-xs text-on-surface-variant line-clamp-2 flex-1">{book.description}</p>
                       )}

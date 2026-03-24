@@ -52,7 +52,7 @@ export default function CollectionsPreviewSection() {
               <FadeIn key={col.id} delay={i * 0.05}>
                 <Link
                   href={`/collections/${col.id}`}
-                  className="group relative flex items-end h-36 rounded-xl overflow-hidden border border-outline/30 hover:shadow-lg transition-all"
+                  className="group relative flex items-end aspect-square rounded-xl overflow-hidden border border-outline/30 hover:shadow-lg transition-all"
                 >
                   {col.imageUrl ? (
                     <Image src={col.imageUrl} alt={col.name} fill className="object-cover transition-transform duration-500 group-hover:scale-105" unoptimized />
