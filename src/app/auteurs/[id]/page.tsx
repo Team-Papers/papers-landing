@@ -4,9 +4,11 @@ import { useState, useEffect } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
-import { ArrowLeft, BookOpen, Loader2, Star, User as UserIcon } from "lucide-react";
-import { fetchAuthor, fetchAuthorBooks, type ApiBook } from "@/lib/api";
+import { ArrowLeft, BookOpen, Loader2, Star, User as UserIcon, UserPlus, UserCheck } from "lucide-react";
+import { fetchAuthor, fetchAuthorBooks, checkFollowing, followAuthor, unfollowAuthor, type ApiBook } from "@/lib/api";
+import { useAuth } from "@/lib/auth";
 import { useCache } from "@/lib/cache";
+import Button from "@/components/ui/Button";
 import FadeIn from "@/components/ui/FadeIn";
 import { cn } from "@/lib/utils";
 
@@ -21,10 +23,12 @@ interface AuthorData {
 export default function AuthorPage() {
   const { id } = useParams<{ id: string }>();
   const router = useRouter();
+  const { user } = useAuth();
   const { prefetchBookDetail } = useCache();
   const [author, setAuthor] = useState<AuthorData | null>(null);
   const [books, setBooks] = useState<ApiBook[]>([]);
   const [loading, setLoading] = useState(true);
+  const [isFollowing, setIsFollowing] = useState(false);
 
   useEffect(() => {
     if (!id) return;
@@ -38,6 +42,20 @@ export default function AuthorPage() {
       setLoading(false);
     });
   }, [id]);
+
+  useEffect(() => {
+    if (user && id) {
+      checkFollowing(id).then(setIsFollowing);
+    }
+  }, [user, id]);
+
+  async function handleToggleFollow() {
+    if (!user) { router.push(`/connexion?redirect=/auteurs/${id}`); return; }
+    if (!id) return;
+    setIsFollowing(!isFollowing);
+    const ok = isFollowing ? await unfollowAuthor(id) : await followAuthor(id);
+    if (!ok) setIsFollowing(isFollowing);
+  }
 
   if (loading) {
     return (
@@ -98,6 +116,21 @@ export default function AuthorPage() {
                     {author.bio}
                   </p>
                 )}
+                <div className="mt-4">
+                  <Button
+                    size="sm"
+                    onClick={handleToggleFollow}
+                    variant={isFollowing ? "outline" : "primary"}
+                    className={cn(
+                      isFollowing
+                        ? "border-white/30 text-white hover:bg-white/10"
+                        : "bg-white text-primary hover:bg-white/90"
+                    )}
+                  >
+                    {isFollowing ? <UserCheck className="w-4 h-4" /> : <UserPlus className="w-4 h-4" />}
+                    {isFollowing ? "Abonne" : "Suivre"}
+                  </Button>
+                </div>
               </div>
             </div>
           </FadeIn>

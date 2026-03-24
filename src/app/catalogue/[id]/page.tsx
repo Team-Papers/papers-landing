@@ -6,11 +6,11 @@ import Link from "next/link";
 import Image from "next/image";
 import {
   ArrowLeft, Star, BookOpen, Loader2, ShoppingCart, Globe, FileText,
-  Hash, Calendar, BookMarked, ChevronRight, User as UserIcon, Smartphone,
+  Hash, Calendar, BookMarked, ChevronRight, User as UserIcon, Smartphone, Heart, X as XIcon, Send,
 } from "lucide-react";
 import { useAuth } from "@/lib/auth";
 import { useCache } from "@/lib/cache";
-import { fetchRecommendedBooks, checkLibraryOwnership, createPurchase, type ApiBookDetail, type ApiBook, type ReviewItem, type ReviewsResponse } from "@/lib/api";
+import { fetchRecommendedBooks, checkLibraryOwnership, createPurchase, checkFavorite, addFavorite, removeFavorite, createReview, type ApiBookDetail, type ApiBook, type ReviewItem, type ReviewsResponse } from "@/lib/api";
 import Button from "@/components/ui/Button";
 import FadeIn from "@/components/ui/FadeIn";
 import { cn } from "@/lib/utils";
@@ -43,6 +43,8 @@ export default function BookDetailPage() {
   const [descExpanded, setDescExpanded] = useState(false);
   const [isOwned, setIsOwned] = useState(false);
   const [obtainLoading, setObtainLoading] = useState(false);
+  const [isFavorite, setIsFavorite] = useState(false);
+  const [showReviewModal, setShowReviewModal] = useState(false);
 
   useEffect(() => {
     if (!id) return;
@@ -59,12 +61,31 @@ export default function BookDetailPage() {
     });
   }, [id, getBookDetail, getReviews]);
 
-  // Check library ownership when user is logged in
+  // Check library ownership and favorite when user is logged in
   useEffect(() => {
     if (user && id) {
       checkLibraryOwnership(id).then(setIsOwned);
+      checkFavorite(id).then(setIsFavorite);
     }
   }, [user, id]);
+
+  async function handleToggleFavorite() {
+    if (!user) { router.push(`/connexion?redirect=/catalogue/${id}`); return; }
+    if (!id) return;
+    setIsFavorite(!isFavorite);
+    const ok = isFavorite ? await removeFavorite(id) : await addFavorite(id);
+    if (!ok) setIsFavorite(isFavorite); // rollback
+  }
+
+  async function handleSubmitReview(rating: number, comment: string): Promise<{ success: boolean; message?: string }> {
+    if (!id) return { success: false, message: "Livre introuvable" };
+    const result = await createReview(id, rating, comment);
+    if (result.success) {
+      setShowReviewModal(false);
+      getReviews(id).then((r) => r && setReviews(r));
+    }
+    return result;
+  }
 
   function handleOpenApp() {
     const deepLink = `intent://book/${id}#Intent;package=com.seedsoftengine.papers;scheme=papers;end`;
@@ -230,7 +251,7 @@ export default function BookDetailPage() {
                 </div>
               )}
 
-              {/* Price + Obtain button */}
+              {/* Price + Obtain + Favorite */}
               <div className="flex flex-col sm:flex-row items-center gap-4 mt-2">
                 {!isOwned && (
                   <div className={cn(
@@ -240,35 +261,49 @@ export default function BookDetailPage() {
                     {formatPrice(book.price)}
                   </div>
                 )}
-                {isOwned ? (
-                  <div className="flex flex-col sm:flex-row items-center gap-3">
-                    <span className="text-sm text-secondary font-medium">Dans votre bibliotheque</span>
+                <div className="flex items-center gap-3">
+                  {isOwned ? (
+                    <>
+                      <span className="text-sm text-secondary font-medium hidden sm:block">Dans votre bibliotheque</span>
+                      <Button
+                        size="lg"
+                        onClick={handleObtain}
+                        className="bg-primary hover:bg-primary-dark text-white shadow-lg shadow-primary/20 min-w-[180px]"
+                      >
+                        <Smartphone className="w-5 h-5" />
+                        Lire sur l&apos;app
+                      </Button>
+                    </>
+                  ) : (
                     <Button
                       size="lg"
                       onClick={handleObtain}
-                      className="bg-primary hover:bg-primary-dark text-white shadow-lg shadow-primary/20 min-w-[180px]"
+                      disabled={obtainLoading}
+                      className="bg-accent hover:bg-accent-700 text-white shadow-lg shadow-accent/20 min-w-[180px]"
                     >
-                      <Smartphone className="w-5 h-5" />
-                      Lire sur l&apos;app
+                      {obtainLoading ? (
+                        <Loader2 className="w-5 h-5 animate-spin" />
+                      ) : (
+                        <>
+                          <ShoppingCart className="w-5 h-5" />
+                          Obtenir
+                        </>
+                      )}
                     </Button>
-                  </div>
-                ) : (
-                  <Button
-                    size="lg"
-                    onClick={handleObtain}
-                    disabled={obtainLoading}
-                    className="bg-accent hover:bg-accent-700 text-white shadow-lg shadow-accent/20 min-w-[180px]"
-                  >
-                    {obtainLoading ? (
-                      <Loader2 className="w-5 h-5 animate-spin" />
-                    ) : (
-                      <>
-                        <ShoppingCart className="w-5 h-5" />
-                        Obtenir
-                      </>
+                  )}
+                  {/* Favorite button */}
+                  <button
+                    onClick={handleToggleFavorite}
+                    className={cn(
+                      "p-3 rounded-xl border-2 transition-all cursor-pointer",
+                      isFavorite
+                        ? "bg-error/10 border-error/30 text-error"
+                        : "bg-white/10 border-white/20 text-white/70 hover:text-white hover:border-white/40"
                     )}
-                  </Button>
-                )}
+                  >
+                    <Heart className={cn("w-5 h-5", isFavorite && "fill-error")} />
+                  </button>
+                </div>
               </div>
             </FadeIn>
           </div>
@@ -307,7 +342,10 @@ export default function BookDetailPage() {
           {activeTab === "description" ? (
             <DescriptionTab book={book} expanded={descExpanded} onToggle={() => setDescExpanded(!descExpanded)} />
           ) : (
-            <ReviewsTab reviews={reviews} />
+            <ReviewsTab
+              reviews={reviews}
+              onWriteReview={() => user ? setShowReviewModal(true) : router.push(`/connexion?redirect=/catalogue/${id}`)}
+            />
           )}
 
           {/* Recommended books */}
@@ -391,7 +429,88 @@ export default function BookDetailPage() {
           </div>
         </div>
       </section>
+
+      {/* Review Modal */}
+      {showReviewModal && (
+        <ReviewModal
+          onClose={() => setShowReviewModal(false)}
+          onSubmit={handleSubmitReview}
+        />
+      )}
     </>
+  );
+}
+
+/* ─── Review Modal ─── */
+function ReviewModal({ onClose, onSubmit }: { onClose: () => void; onSubmit: (rating: number, comment: string) => Promise<{ success: boolean; message?: string }> }) {
+  const [rating, setRating] = useState(0);
+  const [comment, setComment] = useState("");
+  const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState("");
+
+  async function handleSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    if (rating === 0) { setError("Veuillez choisir une note"); return; }
+    setSubmitting(true);
+    setError("");
+    const result = await onSubmit(rating, comment);
+    if (!result.success) {
+      setError(result.message || "Erreur lors de l'envoi");
+    }
+    setSubmitting(false);
+  }
+
+  return (
+    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+      <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={onClose} />
+      <div className="relative bg-white rounded-2xl shadow-2xl border border-outline/50 w-full max-w-md overflow-hidden">
+        <div className="flex items-center justify-between px-6 py-4 border-b border-outline/50">
+          <h3 className="font-display font-bold text-on-surface">Ecrire un avis</h3>
+          <button onClick={onClose} className="p-1 rounded-lg hover:bg-surface-dim cursor-pointer">
+            <XIcon className="w-5 h-5 text-on-surface-muted" />
+          </button>
+        </div>
+        <form onSubmit={handleSubmit} className="p-6 space-y-5">
+          {error && (
+            <div className="bg-error-light text-error text-sm rounded-xl px-4 py-3 font-medium">{error}</div>
+          )}
+          <div>
+            <p className="text-sm font-medium text-on-surface mb-2">Votre note</p>
+            <div className="flex gap-1">
+              {[1, 2, 3, 4, 5].map((s) => (
+                <button
+                  key={s}
+                  type="button"
+                  onClick={() => setRating(s)}
+                  className="p-1 cursor-pointer"
+                >
+                  <Star className={cn("w-8 h-8 transition-colors", s <= rating ? "text-accent fill-accent" : "text-on-surface/15")} />
+                </button>
+              ))}
+            </div>
+          </div>
+          <div>
+            <p className="text-sm font-medium text-on-surface mb-2">Commentaire (optionnel)</p>
+            <textarea
+              value={comment}
+              onChange={(e) => setComment(e.target.value)}
+              placeholder="Partagez votre avis sur ce livre..."
+              maxLength={2000}
+              rows={4}
+              className="w-full px-4 py-3 rounded-xl border border-outline bg-white text-sm text-on-surface placeholder:text-on-surface-muted/50 focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary resize-none"
+            />
+          </div>
+          <Button type="submit" size="lg" className="w-full" disabled={submitting}>
+            {submitting ? <Loader2 className="w-5 h-5 animate-spin" /> : (
+              <>
+                <Send className="w-4 h-4" />
+                Publier l&apos;avis
+              </>
+            )}
+          </Button>
+        </form>
+      </div>
+    </div>
   );
 }
 
@@ -455,7 +574,7 @@ function DescriptionTab({ book, expanded, onToggle }: { book: ApiBookDetail; exp
 }
 
 /* ─── Reviews Tab ─── */
-function ReviewsTab({ reviews }: { reviews: ReviewsResponse | null }) {
+function ReviewsTab({ reviews, onWriteReview }: { reviews: ReviewsResponse | null; onWriteReview: () => void }) {
   if (!reviews || reviews.totalRatings === 0) {
     return (
       <div className="flex flex-col items-center justify-center py-16">
@@ -463,13 +582,25 @@ function ReviewsTab({ reviews }: { reviews: ReviewsResponse | null }) {
           <Star className="w-8 h-8 text-on-surface/15" />
         </div>
         <p className="text-on-surface-variant font-medium">Aucun avis pour le moment</p>
-        <p className="text-sm text-on-surface-muted mt-1">Soyez le premier a donner votre avis !</p>
+        <p className="text-sm text-on-surface-muted mt-1 mb-4">Soyez le premier a donner votre avis !</p>
+        <Button size="sm" onClick={onWriteReview}>
+          <Star className="w-4 h-4" />
+          Ecrire un avis
+        </Button>
       </div>
     );
   }
 
   return (
     <div className="space-y-6">
+      {/* Write review button */}
+      <div className="flex justify-end">
+        <Button size="sm" onClick={onWriteReview}>
+          <Star className="w-4 h-4" />
+          Ecrire un avis
+        </Button>
+      </div>
+
       {/* Summary */}
       <div className="bg-white rounded-2xl border border-outline/50 p-6">
         <div className="flex flex-col sm:flex-row items-center gap-6">

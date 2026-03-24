@@ -519,3 +519,82 @@ export async function updateProfile(userId: string, data: { firstName?: string; 
     return { success: false, message: "Erreur de connexion" };
   }
 }
+
+// ─── Favorites ───
+
+export async function checkFavorite(bookId: string): Promise<boolean> {
+  try {
+    const res = await fetch(`${API_URL}/library/${bookId}/favorite`, { headers: getAuthHeaders() });
+    if (!res.ok) return false;
+    const json = await res.json();
+    return !!json.data;
+  } catch {
+    return false;
+  }
+}
+
+export async function addFavorite(bookId: string): Promise<boolean> {
+  try {
+    const res = await fetch(`${API_URL}/library/${bookId}/favorite`, { method: "POST", headers: getAuthHeaders() });
+    return res.ok;
+  } catch {
+    return false;
+  }
+}
+
+export async function removeFavorite(bookId: string): Promise<boolean> {
+  try {
+    const res = await fetch(`${API_URL}/library/${bookId}/favorite`, { method: "DELETE", headers: getAuthHeaders() });
+    return res.ok;
+  } catch {
+    return false;
+  }
+}
+
+// ─── Follow ───
+
+export async function checkFollowing(authorId: string): Promise<boolean> {
+  try {
+    const res = await fetch(`${API_URL}/authors/${authorId}/is-following`, { headers: getAuthHeaders() });
+    if (!res.ok) return false;
+    const json = await res.json();
+    return !!json.data;
+  } catch {
+    return false;
+  }
+}
+
+export async function followAuthor(authorId: string): Promise<boolean> {
+  try {
+    const res = await fetch(`${API_URL}/authors/${authorId}/follow`, { method: "POST", headers: getAuthHeaders() });
+    return res.ok;
+  } catch {
+    return false;
+  }
+}
+
+export async function unfollowAuthor(authorId: string): Promise<boolean> {
+  try {
+    const res = await fetch(`${API_URL}/authors/${authorId}/follow`, { method: "DELETE", headers: getAuthHeaders() });
+    return res.ok;
+  } catch {
+    return false;
+  }
+}
+
+// ─── Reviews (write) ───
+
+export async function createReview(bookId: string, rating: number, comment?: string): Promise<{ success: boolean; message?: string }> {
+  try {
+    const res = await fetch(`${API_URL}/reviews/books/${bookId}/reviews`, {
+      method: "POST",
+      headers: getAuthHeaders(),
+      body: JSON.stringify({ rating, comment: comment || undefined }),
+    });
+    const json = await res.json();
+    if (!res.ok) return { success: false, message: json.message };
+    return { success: true };
+  } catch {
+    return { success: false, message: "Erreur de connexion" };
+  }
+}
