@@ -249,6 +249,13 @@ export default function BookDetailPage() {
                 <span className="text-sm font-medium">{authorDisplayName(book.author)}</span>
               </Link>
 
+              {/* Author bio */}
+              {book.author.bio && (
+                <p className="text-sm text-white/60 leading-relaxed line-clamp-2 max-w-lg mb-4">
+                  {book.author.bio}
+                </p>
+              )}
+
               {/* Rating */}
               {reviews && reviews.totalRatings > 0 && (
                 <div className="flex items-center gap-2 justify-center md:justify-start mb-4">
