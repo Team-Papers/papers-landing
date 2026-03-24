@@ -112,9 +112,18 @@ export default function CollectionDetailPage() {
                         {book.title}
                       </h3>
                       {book.author && (
-                        <p className="text-sm text-primary/70 font-medium mb-2">
-                          {book.author.penName || `${book.author.user.firstName} ${book.author.user.lastName}`}
-                        </p>
+                        <div className="flex items-center gap-1.5 mb-2">
+                          {book.author.user.avatarUrl ? (
+                            <Image src={book.author.user.avatarUrl} alt="" width={18} height={18} className="w-[18px] h-[18px] rounded-full object-cover" unoptimized />
+                          ) : (
+                            <div className="w-[18px] h-[18px] rounded-full bg-primary/10 flex items-center justify-center">
+                              <span className="text-[8px] font-bold text-primary">{book.author.user.firstName[0]}</span>
+                            </div>
+                          )}
+                          <p className="text-sm text-primary/70 font-medium line-clamp-1">
+                            {book.author.penName || `${book.author.user.firstName} ${book.author.user.lastName}`}
+                          </p>
+                        </div>
                       )}
                       {book.description && (
                         <p className="text-xs text-on-surface-variant line-clamp-2 flex-1">{book.description}</p>

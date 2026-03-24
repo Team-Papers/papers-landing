@@ -85,9 +85,14 @@ export default function TrendingBooksSection() {
                   <p className="text-sm font-medium text-on-surface line-clamp-1 group-hover:text-primary transition-colors">
                     {book.title}
                   </p>
-                  <p className="text-xs text-on-surface-muted line-clamp-1">
-                    {book.author.penName || `${book.author.user.firstName} ${book.author.user.lastName}`}
-                  </p>
+                  <div className="flex items-center gap-1 mt-0.5">
+                    {book.author.user.avatarUrl ? (
+                      <Image src={book.author.user.avatarUrl} alt="" width={14} height={14} className="w-3.5 h-3.5 rounded-full object-cover" unoptimized />
+                    ) : null}
+                    <p className="text-xs text-on-surface-muted line-clamp-1">
+                      {book.author.penName || `${book.author.user.firstName} ${book.author.user.lastName}`}
+                    </p>
+                  </div>
                   {book.description && (
                     <p className="text-xs text-on-surface-variant line-clamp-2 mt-1 leading-relaxed">{book.description}</p>
                   )}
