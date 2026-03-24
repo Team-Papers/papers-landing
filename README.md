@@ -42,7 +42,15 @@ npm start
 | Page | Route | Auth |
 |------|-------|------|
 | Accueil | `/` | Non |
-| Pour les Auteurs | `/auteurs` | Non |
+| Catalogue | `/catalogue` | Non |
+| Detail livre | `/catalogue/[id]` | Non |
+| Paiement livre | `/catalogue/[id]/paiement` | Oui |
+| Blog | `/blog` | Non |
+| Article blog | `/blog/[slug]` | Non |
+| Collections | `/collections` | Non |
+| Detail collection | `/collections/[id]` | Non |
+| Auteurs | `/auteurs` | Non |
+| Detail auteur | `/auteurs/[id]` | Non |
 | Pour les Lecteurs | `/lecteurs` | Non |
 | A Propos | `/a-propos` | Non |
 | Contact | `/contact` | Non |
@@ -51,8 +59,18 @@ npm start
 | Confidentialite | `/confidentialite` | Non |
 | Connexion | `/connexion` | Non (standalone) |
 | Inscription | `/inscription` | Non (standalone) |
-| Catalogue | `/catalogue` | Oui |
+| Bibliotheque | `/bibliotheque` | Oui |
 | Profil | `/profil` | Oui |
+| Notifications | `/notifications` | Oui |
+
+### Page detail livre (`/catalogue/[id]`)
+
+- Affichage couverture, titre, auteur, categories, note moyenne
+- Prix avec logos de paiement (Orange Money, MTN MoMo, Visa/Mastercard)
+- Bouton **Obtenir** (achat gratuit ou redirection vers paiement)
+- Bouton favori
+- Onglets Description / Avis
+- Section auteur et recommandations
 
 ## Authentification
 
