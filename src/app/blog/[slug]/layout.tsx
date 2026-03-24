@@ -17,7 +17,7 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
       openGraph: {
         title: article.title,
         description: article.excerpt?.slice(0, 160) || undefined,
-        images: article.coverImageUrl ? [{ url: article.coverImageUrl }] : undefined,
+        images: article.coverUrl ? [{ url: article.coverUrl }] : undefined,
       },
     };
   } catch {

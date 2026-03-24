@@ -59,8 +59,8 @@ export default function CollectionsPage() {
                     className="group bg-white rounded-2xl border border-outline/50 overflow-hidden hover:shadow-xl hover:-translate-y-1 transition-all flex flex-col"
                   >
                     <div className="relative h-40 overflow-hidden bg-gradient-to-br from-primary/10 to-accent/10">
-                      {col.coverImageUrl ? (
-                        <Image src={col.coverImageUrl} alt={col.name} fill className="object-cover transition-transform duration-500 group-hover:scale-105" unoptimized />
+                      {col.imageUrl ? (
+                        <Image src={col.imageUrl} alt={col.name} fill className="object-cover transition-transform duration-500 group-hover:scale-105" unoptimized />
                       ) : (
                         <div className="w-full h-full flex items-center justify-center">
                           <Layers className="w-12 h-12 text-primary/15" />

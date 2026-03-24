@@ -54,8 +54,8 @@ export default function CollectionsPreviewSection() {
                   href={`/collections/${col.id}`}
                   className="group relative flex items-end h-36 rounded-xl overflow-hidden border border-outline/30 hover:shadow-lg transition-all"
                 >
-                  {col.coverImageUrl ? (
-                    <Image src={col.coverImageUrl} alt={col.name} fill className="object-cover transition-transform duration-500 group-hover:scale-105" unoptimized />
+                  {col.imageUrl ? (
+                    <Image src={col.imageUrl} alt={col.name} fill className="object-cover transition-transform duration-500 group-hover:scale-105" unoptimized />
                   ) : (
                     <div className="absolute inset-0 bg-gradient-to-br from-primary/20 to-accent/20" />
                   )}

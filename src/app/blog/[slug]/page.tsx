@@ -139,10 +139,10 @@ export default function ArticlePage() {
       <section className="bg-surface-dim py-8">
         <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
           {/* Cover */}
-          {article.coverImageUrl && (
+          {article.coverUrl && (
             <FadeIn>
               <div className="relative w-full h-64 sm:h-80 rounded-2xl overflow-hidden mb-8 shadow-lg">
-                <Image src={article.coverImageUrl} alt="" fill className="object-cover" unoptimized />
+                <Image src={article.coverUrl} alt="" fill className="object-cover" unoptimized />
               </div>
             </FadeIn>
           )}

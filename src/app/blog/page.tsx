@@ -74,8 +74,8 @@ export default function BlogPage() {
                       className="group bg-white rounded-2xl border border-outline/50 overflow-hidden hover:shadow-xl hover:-translate-y-1 transition-all flex flex-col h-full"
                     >
                       <div className="relative h-48 overflow-hidden bg-gradient-to-br from-primary/5 to-accent/5">
-                        {article.coverImageUrl ? (
-                          <Image src={article.coverImageUrl} alt={article.title} fill className="object-cover transition-transform duration-500 group-hover:scale-105" unoptimized />
+                        {article.coverUrl ? (
+                          <Image src={article.coverUrl} alt={article.title} fill className="object-cover transition-transform duration-500 group-hover:scale-105" unoptimized />
                         ) : (
                           <div className="w-full h-full flex items-center justify-center">
                             <Newspaper className="w-10 h-10 text-primary/15" />

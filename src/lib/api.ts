@@ -324,7 +324,7 @@ export interface Article {
   slug: string;
   content: string;
   excerpt: string | null;
-  coverImageUrl: string | null;
+  coverUrl: string | null;
   status: string;
   publishedAt: string | null;
   createdAt: string;
@@ -402,7 +402,7 @@ export interface Collection {
   id: string;
   name: string;
   description: string | null;
-  coverImageUrl: string | null;
+  imageUrl: string | null;
   _count: { books: number };
 }
 export interface CollectionDetail extends Collection {
