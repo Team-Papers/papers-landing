@@ -421,6 +421,9 @@ export default function BookDetailPage() {
                     <p className="text-xs text-on-surface-muted line-clamp-1">
                       {rec.author.penName || `${rec.author.user.firstName} ${rec.author.user.lastName}`}
                     </p>
+                    {rec.description && (
+                      <p className="text-xs text-on-surface-variant line-clamp-2 mt-1 leading-relaxed">{rec.description}</p>
+                    )}
                   </Link>
                 ))}
               </div>

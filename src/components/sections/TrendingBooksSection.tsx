@@ -88,6 +88,9 @@ export default function TrendingBooksSection() {
                   <p className="text-xs text-on-surface-muted line-clamp-1">
                     {book.author.penName || `${book.author.user.firstName} ${book.author.user.lastName}`}
                   </p>
+                  {book.description && (
+                    <p className="text-xs text-on-surface-variant line-clamp-2 mt-1 leading-relaxed">{book.description}</p>
+                  )}
                 </Link>
               </FadeIn>
             ))}
