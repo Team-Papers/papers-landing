@@ -223,7 +223,7 @@ export interface AuthorDetail {
   bio: string | null;
   photoUrl: string | null;
   user: { firstName: string; lastName: string; avatarUrl: string | null };
-  books?: { id: string; title: string; slug: string; coverUrl: string | null; price: number; publishedAt: string | null }[];
+  books?: { id: string; title: string; slug: string; description: string | null; coverUrl: string | null; price: number; publishedAt: string | null }[];
   _count?: { followers: number };
 }
 export async function fetchAuthor(id: string): Promise<AuthorDetail | null> {
@@ -292,6 +292,7 @@ export interface LibraryBook {
     id: string;
     title: string;
     slug: string;
+    description: string | null;
     coverUrl: string | null;
     price: number;
     author: { id: string; penName: string | null; user: { firstName: string; lastName: string } };

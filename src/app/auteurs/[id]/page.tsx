@@ -167,6 +167,9 @@ export default function AuthorPage() {
                       <h3 className="font-display font-bold text-on-surface mb-1 line-clamp-1 group-hover:text-primary transition-colors">
                         {book.title}
                       </h3>
+                      {book.description && (
+                        <p className="text-xs text-on-surface-variant line-clamp-2 flex-1 leading-relaxed">{book.description}</p>
+                      )}
                     </div>
                   </Link>
                 </FadeIn>

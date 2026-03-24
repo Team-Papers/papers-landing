@@ -144,9 +144,12 @@ export default function BibliothequePage() {
                     </Link>
                     <div className="p-3">
                       <p className="text-sm font-medium text-on-surface line-clamp-1">{item.book.title}</p>
-                      <p className="text-xs text-on-surface-muted line-clamp-1 mb-2">
+                      <p className="text-xs text-on-surface-muted line-clamp-1">
                         {item.book.author.penName || `${item.book.author.user.firstName} ${item.book.author.user.lastName}`}
                       </p>
+                      {item.book.description && (
+                        <p className="text-xs text-on-surface-variant line-clamp-2 mt-1 leading-relaxed">{item.book.description}</p>
+                      )}
                       <button
                         onClick={() => handleRead(item.book.id)}
                         className="w-full flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-lg bg-primary/10 text-primary text-xs font-medium hover:bg-primary/20 transition-colors cursor-pointer"
