@@ -569,34 +569,34 @@ function DescriptionTab({ book, expanded, onToggle }: { book: ApiBookDetail; exp
   }, [book]);
 
   return (
-    <div className="space-y-8">
-      {/* Description text */}
-      <div className="bg-white rounded-2xl border border-outline/50 p-6">
+    <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      {/* Description text — 2/3 width on desktop */}
+      <div className="lg:col-span-2 bg-white rounded-2xl border border-outline/50 p-6">
         <h3 className="font-display font-bold text-on-surface mb-3">Synopsis</h3>
         <p className={cn(
           "text-sm text-on-surface-variant leading-relaxed whitespace-pre-line",
-          !expanded && isLong && "line-clamp-6"
+          !expanded && isLong && "line-clamp-[12]"
         )}>
           {description}
         </p>
         {isLong && (
           <button
             onClick={onToggle}
-            className="text-sm text-primary font-medium mt-2 hover:underline cursor-pointer"
+            className="text-sm text-primary font-medium mt-3 hover:underline cursor-pointer"
           >
             {expanded ? "Voir moins" : "Voir plus"}
           </button>
         )}
       </div>
 
-      {/* Characteristics */}
+      {/* Characteristics — 1/3 width on desktop */}
       {characteristics.length > 0 && (
-        <div className="bg-white rounded-2xl border border-outline/50 p-6">
+        <div className="bg-white rounded-2xl border border-outline/50 p-6 h-fit">
           <h3 className="font-display font-bold text-on-surface mb-4">Caracteristiques</h3>
-          <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
+          <div className="space-y-3">
             {characteristics.map((c) => (
               <div key={c.label} className="flex items-center gap-3 p-3 rounded-xl bg-surface-dim">
-                <div className="w-9 h-9 rounded-lg bg-primary/10 flex items-center justify-center text-primary">
+                <div className="w-9 h-9 rounded-lg bg-primary/10 flex items-center justify-center text-primary flex-shrink-0">
                   {c.icon}
                 </div>
                 <div>
