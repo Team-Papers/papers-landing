@@ -281,8 +281,8 @@ export default function BookDetailPage() {
                 </div>
               )}
 
-              {/* Price + Obtain + Favorite */}
-              <div className="flex flex-col sm:flex-row items-center gap-4 mt-2">
+              {/* Price + Payment Methods + Obtain + Favorite */}
+              <div className="flex flex-col items-center md:items-start gap-4 mt-2">
                 {!isOwned && (
                   <div className={cn(
                     "text-2xl font-bold",
@@ -291,6 +291,20 @@ export default function BookDetailPage() {
                     {formatPrice(book.price)}
                   </div>
                 )}
+
+                {/* Payment method logos */}
+                {!isOwned && book.price > 0 && (
+                  <div className="flex items-center gap-3">
+                    <span className="text-xs text-white/50 font-medium">Payer avec</span>
+                    <div className="flex items-center gap-2">
+                      <Image src="/images/payments/orange-money.png" alt="Orange Money" width={32} height={32} className="h-8 w-8 rounded object-contain" unoptimized />
+                      <Image src="/images/payments/mtn-momo.svg" alt="MTN MoMo" width={32} height={32} className="h-8 w-auto rounded" unoptimized />
+                      <Image src="/images/payments/visa.svg" alt="Visa" width={32} height={32} className="h-8 w-auto rounded" unoptimized />
+                      <Image src="/images/payments/mastercard.png" alt="Mastercard" width={32} height={32} className="h-8 w-8 rounded object-contain" unoptimized />
+                    </div>
+                  </div>
+                )}
+
                 <div className="flex items-center gap-3">
                   {isOwned ? (
                     <>
