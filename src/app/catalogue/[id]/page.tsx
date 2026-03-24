@@ -423,30 +423,39 @@ export default function BookDetailPage() {
           {/* Author section */}
           <div className="mt-12 bg-white rounded-2xl border border-outline/50 p-6">
             <h2 className="font-display text-lg font-bold text-on-surface mb-4">A propos de l&apos;auteur</h2>
-            <div className="flex items-start gap-4">
+            <div className="flex flex-col items-center text-center sm:flex-row sm:items-start sm:text-left gap-4">
               <div className="flex-shrink-0">
                 {book.author.photoUrl || book.author.user.avatarUrl ? (
                   <Image
                     src={(book.author.photoUrl || book.author.user.avatarUrl)!}
                     alt=""
-                    width={56}
-                    height={56}
-                    className="w-14 h-14 rounded-full object-cover border-2 border-primary/10"
+                    width={64}
+                    height={64}
+                    className="w-16 h-16 rounded-full object-cover border-2 border-primary/10"
                     unoptimized
                   />
                 ) : (
-                  <div className="w-14 h-14 rounded-full bg-primary/10 flex items-center justify-center">
-                    <UserIcon className="w-6 h-6 text-primary" />
+                  <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center">
+                    <UserIcon className="w-7 h-7 text-primary" />
                   </div>
                 )}
               </div>
               <div className="flex-1 min-w-0">
-                <p className="font-display font-bold text-on-surface">{authorDisplayName(book.author)}</p>
+                <Link href={`/auteurs/${book.author.id}`} className="font-display font-bold text-on-surface hover:text-primary transition-colors">
+                  {authorDisplayName(book.author)}
+                </Link>
                 {book.author.bio && (
                   <p className="text-sm text-on-surface-variant mt-1 leading-relaxed line-clamp-3">
                     {book.author.bio}
                   </p>
                 )}
+                <div className="mt-3">
+                  <Link href={`/auteurs/${book.author.id}`}>
+                    <Button size="sm" variant="outline">
+                      Voir le profil
+                    </Button>
+                  </Link>
+                </div>
               </div>
             </div>
           </div>
