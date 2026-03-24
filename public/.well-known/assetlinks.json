@@ -1,0 +1,12 @@
+[
+  {
+    "relation": ["delegate_permission/common.handle_all_urls"],
+    "target": {
+      "namespace": "android_app",
+      "package_name": "com.seedsoftengine.papers",
+      "sha256_cert_fingerprints": [
+        "49:12:AF:AA:88:95:FF:2D:95:D0:AF:5C:B1:46:4D:E0:7F:0A:7D:BF:D4:8C:EB:FB:03:86:62:AE:19:1F:49:70"
+      ]
+    }
+  }
+]

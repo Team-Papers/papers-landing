@@ -3,11 +3,14 @@
 import { ReactNode } from "react";
 import { AuthProvider } from "@/lib/auth";
 import { CacheProvider } from "@/lib/cache";
+import { ToastProvider } from "@/lib/toast";
 
 export default function Providers({ children }: { children: ReactNode }) {
   return (
     <AuthProvider>
-      <CacheProvider>{children}</CacheProvider>
+      <CacheProvider>
+        <ToastProvider>{children}</ToastProvider>
+      </CacheProvider>
     </AuthProvider>
   );
 }

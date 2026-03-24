@@ -14,6 +14,7 @@ import { fetchRecommendedBooks, checkLibraryOwnership, createPurchase, checkFavo
 import Button from "@/components/ui/Button";
 import FadeIn from "@/components/ui/FadeIn";
 import { cn } from "@/lib/utils";
+import { useToast } from "@/lib/toast";
 
 const PLAYSTORE_URL = "https://play.google.com/store/apps/details?id=com.seedsoftengine.papers";
 
@@ -34,6 +35,7 @@ export default function BookDetailPage() {
   const router = useRouter();
   const { user } = useAuth();
   const { getBookDetail, getReviews, prefetchBookDetail } = useCache();
+  const { toast } = useToast();
 
   const [book, setBook] = useState<ApiBookDetail | null>(null);
   const [reviews, setReviews] = useState<ReviewsResponse | null>(null);
@@ -74,7 +76,8 @@ export default function BookDetailPage() {
     if (!id) return;
     setIsFavorite(!isFavorite);
     const ok = isFavorite ? await removeFavorite(id) : await addFavorite(id);
-    if (!ok) setIsFavorite(isFavorite); // rollback
+    if (!ok) { setIsFavorite(isFavorite); toast("Erreur lors de la mise a jour", "error"); }
+    else toast(isFavorite ? "Retire des favoris" : "Ajoute aux favoris");
   }
 
   async function handleSubmitReview(rating: number, comment: string): Promise<{ success: boolean; message?: string }> {
@@ -82,6 +85,7 @@ export default function BookDetailPage() {
     const result = await createReview(id, rating, comment);
     if (result.success) {
       setShowReviewModal(false);
+      toast("Avis publie !");
       getReviews(id).then((r) => r && setReviews(r));
     }
     return result;
@@ -109,12 +113,14 @@ export default function BookDetailPage() {
       return;
     }
     if (Number(book?.price) === 0) {
-      // Free book — acquire directly via purchase API with dummy payment
       setObtainLoading(true);
       const result = await createPurchase(id, "MTN", "000000000");
       setObtainLoading(false);
       if (result.success) {
         setIsOwned(true);
+        toast("Livre ajoute a votre bibliotheque !");
+      } else {
+        toast(result.message || "Erreur", "error");
       }
       return;
     }
@@ -165,12 +171,13 @@ export default function BookDetailPage() {
               Retour
             </button>
             <button
-              onClick={() => {
+              onClick={async () => {
                 const url = window.location.href;
                 if (navigator.share) {
-                  navigator.share({ title: book.title, text: `Decouvrez "${book.title}" sur Papers`, url });
+                  await navigator.share({ title: book.title, text: `Decouvrez "${book.title}" sur Papers`, url }).catch(() => {});
                 } else {
-                  navigator.clipboard.writeText(url);
+                  await navigator.clipboard.writeText(url);
+                  toast("Lien copie !", "info");
                 }
               }}
               className="inline-flex items-center gap-1.5 text-sm text-white/70 hover:text-white cursor-pointer transition-colors"

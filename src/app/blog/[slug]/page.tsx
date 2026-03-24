@@ -4,9 +4,9 @@ import { useState, useEffect } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
-import { ArrowLeft, Heart, MessageCircle, Calendar, Loader2, Newspaper, Send, User as UserIcon, Share2 } from "lucide-react";
+import { ArrowLeft, Heart, MessageCircle, Calendar, Loader2, Newspaper, Send, User as UserIcon, Share2, Trash2 } from "lucide-react";
 import { useAuth } from "@/lib/auth";
-import { fetchArticleBySlug, fetchComments, toggleArticleLike, postComment, type Article, type Comment } from "@/lib/api";
+import { fetchArticleBySlug, fetchComments, toggleArticleLike, postComment, deleteComment, type Article, type Comment } from "@/lib/api";
 import FadeIn from "@/components/ui/FadeIn";
 import Button from "@/components/ui/Button";
 import { cn } from "@/lib/utils";
@@ -57,6 +57,12 @@ export default function ArticlePage() {
     setLiked(!liked);
     setLikeCount((c) => liked ? c - 1 : c + 1);
     await toggleArticleLike(article.id);
+  }
+
+  async function handleDeleteComment(commentId: string) {
+    if (!article) return;
+    const ok = await deleteComment(article.id, commentId);
+    if (ok) setComments((prev) => prev.filter((c) => c.id !== commentId));
   }
 
   async function handleComment(e: React.FormEvent) {
@@ -220,9 +226,17 @@ export default function ArticlePage() {
                       </div>
                     )}
                     <div className="flex-1">
-                      <div className="flex items-baseline gap-2">
+                      <div className="flex items-center gap-2">
                         <p className="text-sm font-medium text-on-surface">{comment.user.firstName} {comment.user.lastName}</p>
                         <p className="text-xs text-on-surface-muted">{formatDate(comment.createdAt)}</p>
+                        {user && user.id === comment.user.id && (
+                          <button
+                            onClick={() => handleDeleteComment(comment.id)}
+                            className="ml-auto p-1 rounded-lg text-on-surface-muted hover:text-error hover:bg-error-light cursor-pointer transition-colors"
+                          >
+                            <Trash2 className="w-3.5 h-3.5" />
+                          </button>
+                        )}
                       </div>
                       <p className="text-sm text-on-surface-variant mt-0.5">{comment.content}</p>
                     </div>

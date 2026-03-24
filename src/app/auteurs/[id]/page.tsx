@@ -4,41 +4,28 @@ import { useState, useEffect } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
-import { ArrowLeft, BookOpen, Loader2, Star, User as UserIcon, UserPlus, UserCheck } from "lucide-react";
-import { fetchAuthor, fetchAuthorBooks, checkFollowing, followAuthor, unfollowAuthor, type ApiBook } from "@/lib/api";
+import { ArrowLeft, BookOpen, Loader2, User as UserIcon, UserPlus, UserCheck } from "lucide-react";
+import { fetchAuthor, checkFollowing, followAuthor, unfollowAuthor, type AuthorDetail } from "@/lib/api";
 import { useAuth } from "@/lib/auth";
 import { useCache } from "@/lib/cache";
 import Button from "@/components/ui/Button";
 import FadeIn from "@/components/ui/FadeIn";
 import { cn } from "@/lib/utils";
 
-interface AuthorData {
-  id: string;
-  penName: string | null;
-  bio: string | null;
-  photoUrl: string | null;
-  user: { firstName: string; lastName: string; avatarUrl: string | null };
-}
-
 export default function AuthorPage() {
   const { id } = useParams<{ id: string }>();
   const router = useRouter();
   const { user } = useAuth();
   const { prefetchBookDetail } = useCache();
-  const [author, setAuthor] = useState<AuthorData | null>(null);
-  const [books, setBooks] = useState<ApiBook[]>([]);
+  const [author, setAuthor] = useState<AuthorDetail | null>(null);
   const [loading, setLoading] = useState(true);
   const [isFollowing, setIsFollowing] = useState(false);
 
   useEffect(() => {
     if (!id) return;
     setLoading(true);
-    Promise.all([
-      fetchAuthor(id),
-      fetchAuthorBooks(id, 20),
-    ]).then(([authorData, authorBooks]) => {
-      setAuthor(authorData);
-      setBooks(authorBooks);
+    fetchAuthor(id).then((data) => {
+      setAuthor(data);
       setLoading(false);
     });
   }, [id]);
@@ -77,6 +64,7 @@ export default function AuthorPage() {
 
   const displayName = author.penName || `${author.user.firstName} ${author.user.lastName}`;
   const avatarSrc = author.photoUrl || author.user.avatarUrl;
+  const books = author.books ?? [];
 
   return (
     <>
@@ -169,27 +157,16 @@ export default function AuthorPage() {
                       <div className="absolute top-3 left-3">
                         <span className={cn(
                           "inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-bold shadow-sm backdrop-blur-sm",
-                          book.price === 0 ? "bg-secondary/90 text-white" : "bg-white/90 text-on-surface"
+                          Number(book.price) === 0 ? "bg-secondary/90 text-white" : "bg-white/90 text-on-surface"
                         )}>
-                          {book.price === 0 ? "Gratuit" : `${Number(book.price).toLocaleString("fr-FR")} FCFA`}
+                          {Number(book.price) === 0 ? "Gratuit" : `${Number(book.price).toLocaleString("fr-FR")} FCFA`}
                         </span>
                       </div>
-                      {book._count.reviews > 0 && (
-                        <div className="absolute top-3 right-3">
-                          <span className="inline-flex items-center gap-1 px-2 py-1 rounded-lg text-xs font-medium bg-white/90 text-on-surface backdrop-blur-sm shadow-sm">
-                            <Star className="w-3 h-3 text-accent fill-accent" />
-                            {book._count.reviews}
-                          </span>
-                        </div>
-                      )}
                     </div>
                     <div className="p-4 flex-1 flex flex-col">
                       <h3 className="font-display font-bold text-on-surface mb-1 line-clamp-1 group-hover:text-primary transition-colors">
                         {book.title}
                       </h3>
-                      {book.description && (
-                        <p className="text-xs text-on-surface-variant line-clamp-2 flex-1 leading-relaxed">{book.description}</p>
-                      )}
                     </div>
                   </Link>
                 </FadeIn>
