@@ -299,8 +299,7 @@ export default function BookDetailPage() {
                     <div className="flex items-center gap-2">
                       <Image src="/images/payments/orange-money.png" alt="Orange Money" width={32} height={32} className="h-8 w-8 rounded object-contain" unoptimized />
                       <Image src="/images/payments/mtn-momo.svg" alt="MTN MoMo" width={32} height={32} className="h-8 w-auto rounded" unoptimized />
-                      <Image src="/images/payments/visa.svg" alt="Visa" width={32} height={32} className="h-8 w-auto rounded" unoptimized />
-                      <Image src="/images/payments/mastercard.png" alt="Mastercard" width={32} height={32} className="h-8 w-8 rounded object-contain" unoptimized />
+                      <Image src="/images/payments/visa-mastercard.png" alt="Visa / Mastercard" width={48} height={38} className="h-8 w-auto rounded object-contain" unoptimized />
                     </div>
                   </div>
                 )}
