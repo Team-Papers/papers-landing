@@ -248,7 +248,7 @@ export default function CataloguePage() {
                             {book.price === 0 ? "Gratuit" : `${Number(book.price).toLocaleString("fr-FR")} FCFA`}
                           </span>
                         </div>
-                        {book._count.reviews > 0 && (
+                        {book._count?.reviews > 0 && (
                           <div className="absolute top-3 right-3">
                             <span className="inline-flex items-center gap-1 px-2 py-1 rounded-lg text-xs font-medium bg-white/90 text-on-surface backdrop-blur-sm shadow-sm">
                               <Star className="w-3 h-3 text-accent fill-accent" />

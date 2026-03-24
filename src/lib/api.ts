@@ -19,6 +19,8 @@ async function refreshToken(): Promise<boolean> {
     if (json.data?.accessToken) {
       localStorage.setItem("papers_token", json.data.accessToken);
       if (json.data.refreshToken) localStorage.setItem("papers_refresh", json.data.refreshToken);
+      // Extend session on successful refresh (rolling 30 days like Facebook/Amazon)
+      localStorage.setItem("papers_session_expiry", String(Date.now() + 30 * 24 * 60 * 60 * 1000));
       return true;
     }
     return false;

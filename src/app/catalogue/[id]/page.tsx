@@ -211,7 +211,7 @@ export default function BookDetailPage() {
             {/* Info */}
             <FadeIn delay={0.1} className="flex-1 text-center md:text-left">
               {/* Categories */}
-              {book.categories.length > 0 && (
+              {book.categories && book.categories.length > 0 && (
                 <div className="flex flex-wrap gap-2 justify-center md:justify-start mb-3">
                   {book.categories.map((c) => (
                     <span
@@ -669,7 +669,7 @@ function ReviewsTab({ reviews, onWriteReview }: { reviews: ReviewsResponse | nul
 
       {/* Review list */}
       <div className="space-y-3">
-        {reviews.data.map((review) => (
+        {(reviews.data ?? []).map((review) => (
           <ReviewCard key={review.id} review={review} />
         ))}
       </div>

@@ -6,6 +6,9 @@ import { getFirebaseAuth, getGoogleProvider } from "@/lib/firebase";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "https://api.papers237.duckdns.org/api/v1";
 
+// Session expires after 30 days
+const SESSION_DURATION_MS = 30 * 24 * 60 * 60 * 1000;
+
 export interface User {
   id: string;
   email: string;
@@ -35,6 +38,20 @@ function saveSession(user: User, accessToken: string, refreshToken: string) {
   localStorage.setItem("papers_user", JSON.stringify(user));
   localStorage.setItem("papers_token", accessToken);
   localStorage.setItem("papers_refresh", refreshToken);
+  localStorage.setItem("papers_session_expiry", String(Date.now() + SESSION_DURATION_MS));
+}
+
+function clearSession() {
+  localStorage.removeItem("papers_user");
+  localStorage.removeItem("papers_token");
+  localStorage.removeItem("papers_refresh");
+  localStorage.removeItem("papers_session_expiry");
+}
+
+function isSessionExpired(): boolean {
+  const expiry = localStorage.getItem("papers_session_expiry");
+  if (!expiry) return true;
+  return Date.now() > Number(expiry);
 }
 
 export function AuthProvider({ children }: { children: ReactNode }) {
@@ -43,13 +60,24 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     const stored = localStorage.getItem("papers_user");
     const token = localStorage.getItem("papers_token");
+
     if (stored && token) {
+      // Check if session has expired (30 days)
+      if (isSessionExpired()) {
+        clearSession();
+        setState({ user: null, loading: false });
+        return;
+      }
+
       try {
         setState({ user: JSON.parse(stored), loading: false });
       } catch {
+        clearSession();
         setState({ user: null, loading: false });
       }
     } else {
+      // Clean up any partial session data
+      if (stored || token) clearSession();
       setState({ user: null, loading: false });
     }
   }, []);
@@ -118,9 +146,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const logout = useCallback(() => {
-    localStorage.removeItem("papers_user");
-    localStorage.removeItem("papers_token");
-    localStorage.removeItem("papers_refresh");
+    clearSession();
     setState({ user: null, loading: false });
   }, []);
 
